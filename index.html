@@ -12,71 +12,100 @@
     <meta property="og:title" content="MapChart Pro - Editore Mappe">
     <meta property="og:description" content="Crea, edita ed esporta mappe ad alta risoluzione direttamente nel tuo browser.">
     <style>
-    :root {
-        --bg-ocean: #050505;        /* Nero profondo */
-        --panel-bg: rgba(10, 20, 10, 0.95); /* Nero con riflesso verde */
-        --card-bg: rgba(0, 255, 0, 0.03);
-        --text-main: #00ff41;       /* Verde Matrix classico */
-        --text-muted: #7ed957;      /* Verde oliva chiaro */
-        --accent: #ffdf00;          /* Giallo Cyber/Attenzione */
-        --success: #22c55e;
-        --danger: #ff4d4d;
-        --border-light: rgba(0, 255, 0, 0.2);
-    }
-    
-    body { margin: 0; overflow: hidden; background-color: var(--bg-ocean); font-family: 'Fira Code', 'Courier New', monospace; color: var(--text-main); user-select: none; }
-    
-    /* Titolo con gradiente Verde-Giallo */
-    .menu-title { 
-        font-size: 3.5rem; 
-        margin: 0 0 10px 0; 
-        font-weight: 800; 
-        background: linear-gradient(to right, #00ff41, #ffdf00); 
-        -webkit-background-clip: text; 
-        -webkit-text-fill-color: transparent; 
-        text-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-    }
+        :root {
+            --bg-ocean: #0f172a; 
+            --panel-bg: rgba(15, 23, 42, 0.95); 
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6; 
+            --success: #10b981;
+            --danger: #ef4444;
+            --border-light: rgba(255, 255, 255, 0.1);
+        }
+        
+        body { margin: 0; overflow: hidden; background-color: var(--bg-ocean); font-family: 'Inter', 'Segoe UI', sans-serif; color: var(--text-main); user-select: none; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
 
-    /* Input e Select più "Industrial" */
-    select, .custom-input { 
-        background: #0a0a0a; 
-        border: 1px solid var(--text-muted); 
-        color: var(--accent); 
-    }
+        /* --- MAIN MENU --- */
+        #main-menu { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at top right, #1e293b 0%, #020617 100%); z-index: 50; }
+        .menu-title { font-size: 3.5rem; margin: 0 0 10px 0; font-weight: 800; background: linear-gradient(to right, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .menu-subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; }
+        .menu-grid { display: flex; gap: 20px; max-width: 1000px; width: 90%; }
+        .menu-card { background: var(--card-bg); border: 1px solid var(--border-light); backdrop-filter: blur(12px); padding: 30px; border-radius: 16px; flex: 1; box-shadow: 0 20px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column; gap: 15px; }
+        .menu-card h2 { margin: 0 0 10px 0; font-size: 1.3rem; color: #fff; }
+        
+        select, .custom-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.9rem; outline: none; background: rgba(0, 0, 0, 0.3); color: var(--text-main); box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
+        select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 35px; }
+        select:focus, .custom-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
+        optgroup { background: #1e293b; color: #3b82f6; font-weight: bold; }
+        option { background: #0f172a; color: #fff; font-weight: normal; }
 
-    /* Effetto Hover Pulsanti */
-    .btn-primary { 
-        background: linear-gradient(135deg, #008f11, #00ff41); 
-        color: #000 !important; /* Testo nero su fondo verde per leggibilità */
-    }
+        .btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--text-main); text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), #4f46e5); border: none; }
+        .btn-success { background: linear-gradient(135deg, var(--success), #059669); border: none; }
 
-    .btn-export { 
-        background: #0a0a0a; 
-        border-color: var(--text-muted); 
-        color: var(--text-main);
-    }
-    .btn-export:hover { 
-        background: var(--text-main); 
-        color: #000; 
-    }
+        /* --- EDITOR UI --- */
+        #editor-ui { display: none; width: 100vw; height: 100vh; }
+        #sidebar { position: absolute; top: 0; left: 0; width: 400px; height: 100vh; background: var(--panel-bg); backdrop-filter: blur(15px); border-right: 1px solid var(--border-light); box-shadow: 10px 0 30px rgba(0,0,0,0.6); z-index: 10; display: flex; flex-direction: column; }
+        .header { padding: 15px 20px; background: rgba(0,0,0,0.3); text-align: center; border-bottom: 1px solid var(--border-light); }
+        .header h1 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .header p { margin: 2px 0 0 0; font-size: 0.75rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        
+        .tools { padding: 15px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .control-group { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; padding: 15px; position: relative; }
+        .control-group label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
+        .toolbar-flex { display: flex; gap: 10px; align-items: center; }
+        
+        .mode-toggle { display: flex; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 4px; border: 1px solid var(--border-light); margin-bottom: 10px;}
+        .mode-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.2s; }
+        .mode-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4); }
 
-    /* Mappa con stile radar */
-    #map-container { 
-        background: #050505;
-        background-image: radial-gradient(circle, #0a1a0a 1px, transparent 1px);
-        background-size: 30px 30px; /* Griglia tattica */
-    }
-    
-    .area { 
-        stroke: rgba(0, 255, 65, 0.3); 
-    }
+        .color-picker-wrapper { display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: 8px; padding: 4px 12px 4px 4px; gap: 10px; flex-grow: 1;}
+        input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; padding: 0; background: transparent; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; }
+        #colorHex { font-family: 'Fira Code', monospace; font-size: 0.9rem; font-weight: bold; }
+        
+        #searchResults { position: absolute; width: calc(100% - 30px); max-height: 200px; overflow-y: auto; background: #1e293b; border: 1px solid var(--accent); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 20; display: none; margin-top: 5px; }
+        .search-category { background: rgba(0,0,0,0.5); font-size: 0.7rem; font-weight: bold; color: var(--accent); padding: 6px 12px; text-transform: uppercase; }
+        .search-item { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+        .search-item:hover { background: rgba(59, 130, 246, 0.2); color: #fff; }
 
-    #loading {
-        border-color: var(--accent);
-        background: #0a0a0a;
-        box-shadow: 0 0 30px rgba(255, 223, 0, 0.2);
-    }
-</style>
+        #inspector-panel { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); display: none; }
+        #insp-name { font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 2px; }
+        #insp-admin { font-size: 0.8rem; color: var(--accent); margin-bottom: 10px; font-weight: bold;}
+        .insp-stat { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; color: var(--text-muted); border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px;}
+        .insp-stat span { color: #fff; font-family: monospace; font-size: 0.9rem;}
+
+        #political-legend-container { display: none; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .legend-title { font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); text-transform: uppercase;}
+        .legend-count { background: rgba(59, 130, 246, 0.2); color: var(--accent); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; border: 1px solid rgba(59, 130, 246, 0.3);}
+        #political-legend-list { overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 8px;}
+        .poli-legend-item { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.9rem;}
+        .poli-color-box { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; flex-shrink: 0; }
+
+        #choropleth-legend-container { display: none; }
+        #choropleth-bar { height: 12px; background: #fff; border-radius: 6px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2);}
+        #choro-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; font-family: monospace;}
+
+        #map-container { position: absolute; top: 0; left: 400px; width: calc(100vw - 400px); height: 100vh; cursor: grab; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); }
+        #map-container:active { cursor: grabbing; }
+        svg { width: 100%; height: 100%; }
+        .area { stroke: rgba(255,255,255,0.2); stroke-width: 0.5px; stroke-linejoin: round; stroke-linecap: round; shape-rendering: geometricPrecision; vector-effect: non-scaling-stroke; transition: fill 0.3s ease, stroke 0.2s; cursor: pointer; }
+        .area:hover { stroke: #fff; stroke-width: 1.5px; }
+        
+        #tooltip { position: absolute; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(5px); border: 1px solid var(--border-light); color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 20; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        #loading { position: absolute; top: 50%; left: calc(50% + 200px); transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); border: 1px solid var(--accent); color: white; padding: 30px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; display: none; pointer-events: none; z-index: 100; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        #toast { position: absolute; bottom: 30px; left: calc(50% + 200px); transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 25px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; font-size: 0.9rem;}
+
+        /* Stili Pulsanti Export */
+        .btn-export { font-size: 0.8rem; padding: 8px; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .btn-export:hover { background: rgba(59, 130, 246, 0.4); border-color: var(--accent); }
+    </style>
 </head>
 <body>
 
