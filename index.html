@@ -24,7 +24,6 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
 
-        /* --- MAIN MENU --- */
         #main-menu { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at top right, #1e293b 0%, #020617 100%); z-index: 50; }
         .menu-title { font-size: 3.5rem; margin: 0 0 10px 0; font-weight: 800; background: linear-gradient(to right, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .menu-subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; }
@@ -41,9 +40,7 @@
         .btn:hover { background: rgba(255, 255, 255, 0.1); }
         .btn-primary { background: linear-gradient(135deg, var(--accent), #4f46e5); border: none; }
         .btn-success { background: linear-gradient(135deg, var(--success), #059669); border: none; }
-        .btn-danger { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
 
-        /* --- EDITOR UI --- */
         #editor-ui { display: none; width: 100vw; height: 100vh; }
         #sidebar { position: absolute; top: 0; left: 0; width: 400px; height: 100vh; background: var(--panel-bg); backdrop-filter: blur(15px); border-right: 1px solid var(--border-light); box-shadow: 10px 0 30px rgba(0,0,0,0.6); z-index: 10; display: flex; flex-direction: column; }
         .header { padding: 15px 20px; background: rgba(0,0,0,0.3); text-align: center; border-bottom: 1px solid var(--border-light); }
@@ -65,20 +62,17 @@
         input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; }
         #colorHex { font-family: 'Fira Code', monospace; font-size: 0.9rem; font-weight: bold; }
         
-        /* Search */
         #searchResults { position: absolute; width: calc(100% - 30px); max-height: 200px; overflow-y: auto; background: #1e293b; border: 1px solid var(--accent); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 20; display: none; margin-top: 5px; }
         .search-category { background: rgba(0,0,0,0.5); font-size: 0.7rem; font-weight: bold; color: var(--accent); padding: 6px 12px; text-transform: uppercase; }
         .search-item { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
         .search-item:hover { background: rgba(59, 130, 246, 0.2); color: #fff; }
 
-        /* --- INSPECTOR REGIONE --- */
         #inspector-panel { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); display: none; }
         #insp-name { font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 2px; }
         #insp-admin { font-size: 0.8rem; color: var(--accent); margin-bottom: 10px; font-weight: bold;}
         .insp-stat { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; color: var(--text-muted); border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px;}
         .insp-stat span { color: #fff; font-family: monospace; font-size: 0.9rem;}
 
-        /* Map */
         #map-container { position: absolute; top: 0; left: 400px; width: calc(100vw - 400px); height: 100vh; cursor: grab; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); }
         #map-container:active { cursor: grabbing; }
         svg { width: 100%; height: 100%; }
@@ -90,8 +84,7 @@
         #loading { position: absolute; top: 50%; left: calc(50% + 200px); transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); border: 1px solid var(--accent); color: white; padding: 30px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; display: none; pointer-events: none; z-index: 100; text-align: center; }
         #toast { position: absolute; bottom: 30px; left: calc(50% + 200px); transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 25px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; }
         
-        /* Legenda Coropletica */
-        #choropleth-legend { display: none; height: 10px; background: linear-gradient(to right, #ffffcc, #800026); border-radius: 5px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2);}
+        #choropleth-legend { display: none; height: 12px; background: #fff; border-radius: 6px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2);}
         #choro-labels { display: none; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; font-family: monospace;}
     </style>
 </head>
@@ -161,7 +154,7 @@
                     <label>📌 Dati Regione Selezionata</label>
                     <div id="insp-name">Nessuna Selezione</div>
                     <div id="insp-admin">---</div>
-                    <div class="insp-stat">Area (Calcolata): <span id="insp-area">0</span></div>
+                    <div class="insp-stat">Area: <span id="insp-area">0</span></div>
                     <input type="number" id="insp-pop" class="custom-input" placeholder="Inserisci Popolazione..." style="margin-bottom: 10px; background: rgba(0,0,0,0.5);">
                     <div class="insp-stat" style="border:none; margin-bottom:0;">Densità: <span id="insp-density" style="color:var(--accent);">0</span></div>
                 </div>
@@ -205,7 +198,7 @@
             },
             refreshSlots: () => {
                 for (let i = 1; i <= 3; i++) {
-                    const data = localStorage.getItem(`mapchart_gis_${i}`);
+                    const data = localStorage.getItem(`mapchart_truegis_${i}`);
                     let text = `Slot ${i}: Vuoto`;
                     if (data) {
                         try { const p = JSON.parse(data); text = `Slot ${i}: ${AppManager.mapSources[p.mapType].name}`; } catch(e){}
@@ -229,7 +222,7 @@
                 
                 this.currentColor = "#ef4444"; this.currentMode = "political";
                 this.currentFeatures = []; this.currentPathGenerator = null;
-                this.selectedFeatureIndex = null; // Indice della regione ispezionata
+                this.selectedFeatureIndex = null; 
 
                 this.initUI(); this.initZoom();
                 window.addEventListener('resize', () => this.resize());
@@ -240,7 +233,6 @@
                 cInput.addEventListener('input', e => { this.currentColor = e.target.value; document.getElementById('colorHex').textContent = this.currentColor.toUpperCase(); });
                 document.getElementById('eraserBtn').addEventListener('click', () => { this.currentColor = defaultLandHex; document.getElementById('colorHex').textContent = "GOMMA"; });
                 
-                // Toggle Map Modes
                 document.querySelectorAll('.mode-btn').forEach(btn => {
                     btn.addEventListener('click', e => {
                         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -250,33 +242,28 @@
                     });
                 });
 
-                // Salva le modifiche della popolazione nel poligono selezionato
                 document.getElementById('insp-pop').addEventListener('input', e => {
                     if (this.selectedFeatureIndex !== null) {
                         const d = this.currentFeatures[this.selectedFeatureIndex];
                         d.properties._population = Number(e.target.value);
                         
-                        // Aggiorna UI densità
                         const density = d.properties._population / d.properties._area_km2;
                         document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
                         
-                        // Se in modalità coropletica, ricalcola i colori live
                         if (this.currentMode !== 'political') this.applyChoropleth();
                     }
                 });
 
                 document.getElementById('btnSaveExit').addEventListener('click', () => {
                     const slot = document.getElementById('editorSaveSlot').value.replace('slot_', '');
-                    localStorage.setItem(`mapchart_gis_${slot}`, JSON.stringify(this.generateState()));
+                    localStorage.setItem(`mapchart_truegis_${slot}`, JSON.stringify(this.generateState()));
                     AppManager.showToast("Salvato!"); AppManager.goToMenu();
                 });
 
                 this.initSearch();
             }
 
-            calculateArea(feature) {
-                return d3.geoArea(feature) * EARTH_RADIUS_KM * EARTH_RADIUS_KM;
-            }
+            calculateArea(feature) { return d3.geoArea(feature) * EARTH_RADIUS_KM * EARTH_RADIUS_KM; }
 
             applyChoropleth() {
                 const legendBar = document.getElementById('choropleth-legend');
@@ -289,32 +276,33 @@
                 }
 
                 legendBar.style.display = 'block'; legendLabels.style.display = 'flex';
-                
-                // Calcola il massimo su TUTTI i poligoni che hanno un dato
                 const isPop = this.currentMode === 'population';
-                
-                // Filtra solo le regioni con popolazione > 0 per trovare un vero max
                 const validFeatures = this.currentFeatures.filter(d => (d.properties._population || 0) > 0);
                 let maxVal = 1;
 
                 if (validFeatures.length > 0) {
-                    maxVal = d3.max(validFeatures, d => {
-                        return isPop ? d.properties._population : (d.properties._population / d.properties._area_km2);
-                    });
+                    maxVal = d3.max(validFeatures, d => isPop ? d.properties._population : (d.properties._population / d.properties._area_km2));
                 }
 
-                // Scala colore D3 (Popolazione = Scala Blu, Densità = Scala Giallo/Rosso)
+                // IL SEGRETO DELLA SFUMATURA: La Scala Esponenziale (Power Scale)
+                // Usando un esponente < 1 (es. 0.3) comprimiamo i valori altissimi, garantendo sfumature visibili anche per i valori medi e bassi.
                 const interpolator = isPop ? d3.interpolateBlues : d3.interpolateYlOrRd;
-                const colorScale = d3.scaleSequential(interpolator).domain([0, maxVal]);
+                const colorScale = d3.scaleSequentialPow(interpolator).exponent(0.3).domain([0, maxVal]);
                 
-                // Aggiorna grafica legenda
-                legendBar.style.background = `linear-gradient(to right, ${interpolator(0)}, ${interpolator(0.5)}, ${interpolator(1)})`;
+                // Disegna il gradiente nella UI usando step proporzionali all'esponente
+                legendBar.style.background = `linear-gradient(to right, 
+                    ${interpolator(0)}, 
+                    ${interpolator(0.25)}, 
+                    ${interpolator(0.5)}, 
+                    ${interpolator(0.75)}, 
+                    ${interpolator(1)})`;
+                    
                 document.getElementById('choro-max').textContent = isPop ? (maxVal/1000000).toFixed(1) + "M" : maxVal.toFixed(0) + " ab/km²";
 
                 this.g.selectAll(".area")
                     .attr("fill", d => {
                         const pop = d.properties._population || 0;
-                        if (pop === 0) return defaultLandHex; // Le aree senza dati restano scure
+                        if (pop === 0) return defaultLandHex; 
                         const val = isPop ? pop : (pop / d.properties._area_km2);
                         return colorScale(val);
                     });
@@ -338,7 +326,7 @@
 
                     let hasResults = false;
 
-                    // Bulk Coloring Nazione
+                    // Bulk Coloring (Nazioni Intere)
                     if (matchedNations.size > 0) {
                         hasResults = true;
                         const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Colore Mappa Politica (Nazione)'; sResults.appendChild(catTitle);
@@ -349,7 +337,7 @@
                         });
                     }
 
-                    // Selezione e Zoom Singola Regione
+                    // Singole Regioni
                     if (matchedRegions.length > 0) {
                         hasResults = true;
                         const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Seleziona e Ispeziona (Regione)'; sResults.appendChild(catTitle);
@@ -368,13 +356,12 @@
             }
 
             colorAndZoomNation(nationName) {
-                // Colora politicamente tutte le regioni, non tocca i dati demografici
+                // Modifica solo il colore politico (non tocca i dati della popolazione)
                 this.g.selectAll(".area")
                     .filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName))
                     .each(d => d.properties._factionColor = this.currentColor)
-                    .attr("fill", d => this.currentMode === 'political' ? this.currentColor : d3.select(this).attr("fill")); // aggiorna fill solo se in modo politico
+                    .attr("fill", d => this.currentMode === 'political' ? this.currentColor : d3.select(this).attr("fill"));
 
-                // Bounding Box per lo Zoom
                 const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
                 if (matchingFeatures.length === 0 || !this.currentPathGenerator) return;
 
@@ -393,7 +380,6 @@
                 const i = this.currentFeatures.indexOf(d);
                 this.selectedFeatureIndex = i;
                 
-                // Aggiorna Pannello UI
                 document.getElementById('inspector-panel').style.display = 'block';
                 document.getElementById('insp-name').textContent = d.properties.name || d.properties.NAME || "Area Sconosciuta";
                 document.getElementById('insp-admin').textContent = d.properties.admin || d.properties.admin0 || "---";
@@ -405,11 +391,9 @@
                 const density = pop > 0 ? pop / d.properties._area_km2 : 0;
                 document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
 
-                // Applica anche il colore politico selezionato dal pennello!
+                // Colora politicamente
                 d.properties._factionColor = this.currentColor;
-                if(this.currentMode === 'political') {
-                    d3.select("#path-" + i).attr("fill", this.currentColor);
-                }
+                if(this.currentMode === 'political') { d3.select("#path-" + i).attr("fill", this.currentColor); }
             }
 
             zoomToFeature(d) {
@@ -422,10 +406,7 @@
                 const stateData = {};
                 this.currentFeatures.forEach((d, i) => { 
                     if ((d.properties._factionColor && d.properties._factionColor !== defaultLandHex) || d.properties._population > 0) {
-                        stateData[i] = { 
-                            c: d.properties._factionColor, 
-                            p: d.properties._population || 0 
-                        };
+                        stateData[i] = { c: d.properties._factionColor, p: d.properties._population || 0 };
                     } 
                 });
                 return { mapType: this.currentMapType, data: stateData };
@@ -437,7 +418,7 @@
                     d.properties._factionColor = saved ? saved.c : defaultLandHex;
                     d.properties._population = saved ? saved.p : 0;
                 });
-                this.applyChoropleth(); // Applica la modalità corretta
+                this.applyChoropleth();
             }
 
             initZoom() { this.zoom = d3.zoom().scaleExtent([0.5, 100]).on("zoom", e => this.g.attr("transform", e.transform)); this.svg.call(this.zoom); }
@@ -446,18 +427,16 @@
             async loadMap(mapType, url) {
                 this.currentMapType = mapType; this.g.selectAll("*").remove(); 
                 document.getElementById("loading").style.display = "block";
-                document.getElementById('inspector-panel').style.display = 'none'; // reset ispettore
+                document.getElementById('inspector-panel').style.display = 'none';
                 this.selectedFeatureIndex = null;
                 
                 try {
                     const res = await fetch(url); const geoData = await res.json();
-                    
                     geoData.features.forEach(d => { 
                         d.properties._area_km2 = this.calculateArea(d); 
                         d.properties._factionColor = defaultLandHex; 
                         d.properties._population = 0;
                     });
-                    
                     this.currentFeatures = geoData.features; this.drawMap(geoData);
                 } catch (e) { AppManager.showToast("Errore di caricamento.", true); }
                 document.getElementById("loading").style.display = "none";
@@ -481,9 +460,7 @@
                     })
                     .on("mousemove", e => this.tooltip.style("left", (e.pageX + 15)+"px").style("top", (e.pageY - 15)+"px"))
                     .on("mouseout", () => this.tooltip.style("opacity", 0))
-                    .on("click", (e, d) => {
-                        this.selectAndInspect(d);
-                    });
+                    .on("click", (e, d) => { this.selectAndInspect(d); });
             }
         }
 
@@ -493,7 +470,7 @@
         document.getElementById('btnStartNew').addEventListener('click', () => AppManager.goToEditor(document.getElementById('startMapSelector').value));
         document.getElementById('btnLoadLocal').addEventListener('click', () => {
             const slot = document.getElementById('menuSaveSlot').value.replace('slot_', '');
-            const data = localStorage.getItem(`mapchart_gis_${slot}`);
+            const data = localStorage.getItem(`mapchart_truegis_${slot}`);
             if (data) AppManager.goToEditor(JSON.parse(data).mapType, JSON.parse(data)); else AppManager.showToast("Slot vuoto", true);
         });
     </script>
