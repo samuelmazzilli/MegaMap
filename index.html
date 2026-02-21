@@ -3,119 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MegaMap - V26.20.02.20.01</title>
+    <title>MegaMap - V26.20.02.20.12 (Dynamic Renaming Edition)</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="icon" type="image/png" href="favicon.png">
     <meta name="description" content="Il motore GIS definitivo per creare mappe coropletiche e politiche.">
-    <meta property="og:title" content="MapChart Pro - Editore Mappe">
-    <meta property="og:description" content="Crea, edita ed esporta mappe ad alta risoluzione direttamente nel tuo browser.">
     <style>
         :root {
-            --bg-ocean: #0f172a; 
-            --panel-bg: rgba(15, 23, 42, 0.95); 
-            --card-bg: rgba(255, 255, 255, 0.04);
-            --text-main: #f8fafc;
+            --bg-ocean: #1e293b; 
+            --panel-bg: #0f172a; 
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
             --text-muted: #94a3b8;
-            --accent: #3b82f6; 
-            --success: #10b981;
-            --danger: #ef4444;
-            --border-light: rgba(255, 255, 255, 0.1);
+            --accent: #2563eb; 
+            --success: #16a34a;
+            --danger: #dc2626;
+            --border-light: #334155;
+            --btn-hover: #3b82f6;
         }
         
         body { margin: 0; overflow: hidden; background-color: var(--bg-ocean); font-family: 'Inter', 'Segoe UI', sans-serif; color: var(--text-main); user-select: none; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--panel-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         /* --- MAIN MENU --- */
-        #main-menu { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at top right, #1e293b 0%, #020617 100%); z-index: 50; }
-        .menu-title { font-size: 3.5rem; margin: 0 0 10px 0; font-weight: 800; background: linear-gradient(to right, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #main-menu { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-ocean); z-index: 50; }
+        .menu-title { font-size: 3rem; margin: 0 0 10px 0; font-weight: 800; color: #fff; letter-spacing: -1px; }
         .menu-subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; }
-        .menu-grid { display: flex; gap: 20px; max-width: 1000px; width: 90%; }
-        .menu-card { background: var(--card-bg); border: 1px solid var(--border-light); backdrop-filter: blur(12px); padding: 30px; border-radius: 16px; flex: 1; box-shadow: 0 20px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column; gap: 15px; }
-        .menu-card h2 { margin: 0 0 10px 0; font-size: 1.3rem; color: #fff; }
+        .menu-grid { display: flex; gap: 20px; max-width: 1000px; width: 95%; align-items: stretch; }
+        .menu-card { background: var(--card-bg); border: 1px solid var(--border-light); padding: 30px; border-radius: 8px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .menu-card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
         
-        select, .custom-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.9rem; outline: none; background: rgba(0, 0, 0, 0.3); color: var(--text-main); box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
-        select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 35px; }
-        select:focus, .custom-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
-        optgroup { background: #1e293b; color: #3b82f6; font-weight: bold; }
-        option { background: #0f172a; color: #fff; font-weight: normal; }
+        select, .custom-input { width: 100%; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--border-light); font-size: 0.9rem; outline: none; background: var(--panel-bg); color: var(--text-main); box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
+        select { cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 35px; }
+        select:focus, .custom-input:focus { border-color: var(--accent); }
+        optgroup { background: var(--card-bg); color: var(--accent); font-weight: bold; }
+        option { background: var(--panel-bg); color: #fff; font-weight: normal; }
 
-        .btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--text-main); text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
-        .btn:hover { background: rgba(255, 255, 255, 0.1); }
-        .btn-primary { background: linear-gradient(135deg, var(--accent), #4f46e5); border: none; }
-        .btn-success { background: linear-gradient(135deg, var(--success), #059669); border: none; }
+        .btn { background: var(--border-light); border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: 600; color: #fff; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+        .btn:hover { background: var(--text-muted); }
+        .btn-primary { background: var(--accent); }
+        .btn-primary:hover { background: var(--btn-hover); }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #15803d; }
+
+        .file-upload-wrapper { position: relative; width: 100%; height: 42px; display: flex; align-items: center; background: var(--panel-bg); border: 1px solid var(--border-light); border-radius: 4px; overflow: hidden; }
+        .file-upload-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
+        .file-upload-btn { background: var(--border-light); padding: 0 15px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #fff; z-index: 1; border-right: 1px solid var(--panel-bg); }
+        .file-name-display { padding-left: 10px; font-size: 0.8rem; color: var(--text-muted); z-index: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: calc(100% - 110px); }
 
         /* --- EDITOR UI --- */
         #editor-ui { display: none; width: 100vw; height: 100vh; }
-        #sidebar { position: absolute; top: 0; left: 0; width: 400px; height: 100vh; background: var(--panel-bg); backdrop-filter: blur(15px); border-right: 1px solid var(--border-light); box-shadow: 10px 0 30px rgba(0,0,0,0.6); z-index: 10; display: flex; flex-direction: column; }
-        .header { padding: 15px 20px; background: rgba(0,0,0,0.3); text-align: center; border-bottom: 1px solid var(--border-light); }
-        .header h1 { margin: 0; font-size: 1.4rem; font-weight: 800; }
-        .header p { margin: 2px 0 0 0; font-size: 0.75rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        #sidebar { position: absolute; top: 0; left: 0; width: 350px; height: 100vh; background: var(--panel-bg); border-right: 1px solid var(--border-light); z-index: 10; display: flex; flex-direction: column; }
+        .header { padding: 15px 20px; background: var(--card-bg); text-align: center; border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+        .header h1 { margin: 0; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { margin: 4px 0 0 0; font-size: 0.75rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
         
         .tools { padding: 15px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .control-group { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; padding: 15px; position: relative; }
-        .control-group label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
+        .control-group { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 4px; padding: 15px; flex-shrink: 0; }
+        .control-group label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .toolbar-flex { display: flex; gap: 10px; align-items: center; }
         
-        .mode-toggle { display: flex; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 4px; border: 1px solid var(--border-light); margin-bottom: 10px;}
-        .mode-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.2s; }
-        .mode-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4); }
+        .mode-toggle { display: flex; background: var(--panel-bg); border-radius: 4px; padding: 4px; border: 1px solid var(--border-light); margin-bottom: 10px;}
+        .mode-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; border-radius: 2px; transition: 0.2s; }
+        .mode-btn.active { background: var(--accent); color: white; }
 
-        .color-picker-wrapper { display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: 8px; padding: 4px 12px 4px 4px; gap: 10px; flex-grow: 1;}
-        input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; padding: 0; background: transparent; }
+        .color-picker-wrapper { display: flex; align-items: center; background: var(--panel-bg); border: 1px solid var(--border-light); border-radius: 4px; padding: 4px 12px 4px 4px; gap: 10px; flex-grow: 1;}
+        input[type="color"] { -webkit-appearance: none; border: none; width: 28px; height: 28px; border-radius: 2px; cursor: pointer; padding: 0; background: transparent; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; }
-        #colorHex { font-family: 'Fira Code', monospace; font-size: 0.9rem; font-weight: bold; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-light); border-radius: 2px; }
+        #colorHex { font-family: 'Fira Code', monospace; font-size: 0.85rem; font-weight: bold; }
         
-        #searchResults { position: absolute; width: calc(100% - 30px); max-height: 200px; overflow-y: auto; background: #1e293b; border: 1px solid var(--accent); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 20; display: none; margin-top: 5px; }
-        .search-category { background: rgba(0,0,0,0.5); font-size: 0.7rem; font-weight: bold; color: var(--accent); padding: 6px 12px; text-transform: uppercase; }
-        .search-item { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
-        .search-item:hover { background: rgba(59, 130, 246, 0.2); color: #fff; }
+        #searchResults { position: absolute; width: calc(100% - 30px); max-height: 200px; overflow-y: auto; background: var(--panel-bg); border: 1px solid var(--accent); border-radius: 4px; z-index: 20; display: none; margin-top: 5px; }
+        .search-category { background: var(--card-bg); font-size: 0.7rem; font-weight: bold; color: var(--accent); padding: 6px 12px; text-transform: uppercase; }
+        .search-item { padding: 8px 12px; border-bottom: 1px solid var(--border-light); cursor: pointer; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+        .search-item:hover { background: var(--border-light); color: #fff; }
 
-        #inspector-panel { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); display: none; }
-        #insp-name { font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 2px; }
-        #insp-admin { font-size: 0.8rem; color: var(--accent); margin-bottom: 10px; font-weight: bold;}
-        .insp-stat { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; color: var(--text-muted); border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px;}
-        .insp-stat span { color: #fff; font-family: monospace; font-size: 0.9rem;}
+        #inspector-panel { border-left: 3px solid var(--accent); display: none; }
+        #insp-name { font-size: 1.1rem; font-weight: bold; color: #fff; margin-bottom: 2px; }
+        #insp-admin { font-size: 0.75rem; color: var(--accent); margin-bottom: 10px; font-weight: bold;}
+        .insp-stat { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-light); padding-bottom: 4px;}
+        .insp-stat span { color: #fff; font-family: monospace; font-size: 0.85rem;}
 
-        #political-legend-container { display: none; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
-        .legend-title { font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); text-transform: uppercase;}
-        .legend-count { background: rgba(59, 130, 246, 0.2); color: var(--accent); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; border: 1px solid rgba(59, 130, 246, 0.3);}
-        #political-legend-list { overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 8px;}
-        .poli-legend-item { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.9rem;}
-        .poli-color-box { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; flex-shrink: 0; }
+        #political-legend-container { display: flex; flex-grow: 1; flex-shrink: 0; min-height: 200px; overflow: hidden; flex-direction: column; }
+        .legend-title { font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); text-transform: uppercase;}
+        .legend-count { background: var(--border-light); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+        #political-legend-list { overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 6px;}
+        .poli-legend-item { display: flex; align-items: center; gap: 10px; background: var(--panel-bg); padding: 6px; border-radius: 4px; border: 1px solid var(--border-light); font-size: 0.85rem; cursor: pointer; transition: background 0.2s;}
+        .poli-legend-item:hover { background: var(--border-light); }
+        .poli-color-box { width: 16px; height: 16px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; }
 
         #choropleth-legend-container { display: none; }
-        #choropleth-bar { height: 12px; background: #fff; border-radius: 6px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2);}
-        #choro-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; font-family: monospace;}
+        #choropleth-bar { height: 10px; background: #fff; border-radius: 2px; margin-top: 10px; border: 1px solid var(--border-light);}
+        #choro-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; font-family: monospace;}
 
-        #map-container { position: absolute; top: 0; left: 400px; width: calc(100vw - 400px); height: 100vh; cursor: grab; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); }
+        #map-container { position: absolute; top: 0; left: 350px; width: calc(100vw - 350px); height: 100vh; cursor: grab; background: var(--bg-ocean); }
         #map-container:active { cursor: grabbing; }
         svg { width: 100%; height: 100%; }
-        .area { stroke: rgba(255,255,255,0.2); stroke-width: 0.5px; stroke-linejoin: round; stroke-linecap: round; shape-rendering: geometricPrecision; vector-effect: non-scaling-stroke; transition: fill 0.3s ease, stroke 0.2s; cursor: pointer; }
-        .area:hover { stroke: #fff; stroke-width: 1.5px; }
+        .area { stroke: var(--panel-bg); stroke-width: 0.5px; stroke-linejoin: round; stroke-linecap: round; shape-rendering: geometricPrecision; vector-effect: non-scaling-stroke; transition: fill 0.2s ease, stroke 0.1s; cursor: pointer; }
+        .area:hover { stroke: #fff; stroke-width: 1px; }
         
-        #tooltip { position: absolute; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(5px); border: 1px solid var(--border-light); color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 20; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        #loading { position: absolute; top: 50%; left: calc(50% + 200px); transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); border: 1px solid var(--accent); color: white; padding: 30px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; display: none; pointer-events: none; z-index: 100; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-        #toast { position: absolute; bottom: 30px; left: calc(50% + 200px); transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 25px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; font-size: 0.9rem;}
+        #tooltip { position: absolute; background: var(--panel-bg); border: 1px solid var(--border-light); color: white; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        #loading { position: absolute; top: 50%; left: calc(50% + 175px); transform: translate(-50%, -50%); background: var(--panel-bg); border: 1px solid var(--accent); color: white; padding: 20px 30px; border-radius: 4px; font-size: 1.1rem; font-weight: bold; display: none; pointer-events: none; z-index: 100; text-align: center; }
+        #toast { position: absolute; bottom: 30px; left: calc(50% + 175px); transform: translateX(-50%); background: var(--success); color: white; padding: 10px 20px; border-radius: 4px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; font-size: 0.85rem;}
 
-        /* Stili Pulsanti Export */
-        .btn-export { font-size: 0.8rem; padding: 8px; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-        .btn-export:hover { background: rgba(59, 130, 246, 0.4); border-color: var(--accent); }
+        .export-grid { display: flex; gap: 8px; margin-bottom: 10px; }
+        .btn-export { flex: 1; padding: 10px 5px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: #fff; transition: filter 0.2s; text-align: center; }
+        .btn-export:hover { filter: brightness(1.2); }
+        #exportPng { background: var(--border-light); }
+        #exportJpg { background: var(--border-light); }
+        #exportPdf { background: var(--accent); }
+        #btnExportProject { background: var(--text-muted); }
     </style>
 </head>
 <body>
 
     <div id="main-menu">
-        <h1 class="menu-title">Map Editor Pro</h1>
-        <p class="menu-subtitle">Esporta i tuoi mondi con precisione al pixel</p>
+        <h1 class="menu-title">MegaMap - V26.02.21.12.32</h1>
+        <p class="menu-subtitle">Ambiente di Raggruppamento Geografico</p>
         <div class="menu-grid">
             <div class="menu-card">
-                <h2>✨ Nuovo Progetto</h2>
-                <select id="startMapSelector" style="margin-bottom: 15px; height: 45px;">
+                <h2>Nuovo Progetto</h2>
+                <select id="startMapSelector" style="margin-bottom: 15px; height: 42px;">
                     <optgroup label="🌍 Mappe Globali">
                         <option value="world_complete">Mondo Completo (Dati Reali)</option>
                         <option value="world_countries">Mondo (Solo Nazioni)</option>
@@ -149,13 +161,22 @@
                 <button class="btn btn-primary" id="btnStartNew">Avvia Workspace</button>
             </div>
             <div class="menu-card">
-                <h2>💾 Memoria Locale</h2>
-                <select id="menuSaveSlot" style="margin-bottom: 15px; height: 45px;">
+                <h2>Memoria Locale</h2>
+                <select id="menuSaveSlot" style="margin-bottom: 15px; height: 42px;">
                     <option value="slot_1">Slot 1: Vuoto</option>
                     <option value="slot_2">Slot 2: Vuoto</option>
                     <option value="slot_3">Slot 3: Vuoto</option>
                 </select>
                 <button class="btn btn-success" id="btnLoadLocal">Carica ed Entra</button>
+            </div>
+            <div class="menu-card">
+                <h2>Importa Progetto</h2>
+                <div class="file-upload-wrapper" style="margin-bottom: 15px;">
+                    <input type="file" id="importProjectFile" accept=".json" class="file-upload-input">
+                    <div class="file-upload-btn">Sfoglia</div>
+                    <div id="fileNameDisplay" class="file-name-display">Nessun file...</div>
+                </div>
+                <button class="btn btn-primary" id="btnImportProject" style="background: var(--text-muted);">Carica da JSON</button>
             </div>
         </div>
     </div>
@@ -169,11 +190,11 @@
             <div class="tools">
                 
                 <div class="control-group">
-                    <label>👁️ Modalità Visualizzazione</label>
+                    <label>Modalità Visualizzazione</label>
                     <div class="mode-toggle">
-                        <button class="mode-btn active" data-mode="political">🎨 Politica</button>
-                        <button class="mode-btn" data-mode="population">👥 Pop</button>
-                        <button class="mode-btn" data-mode="density">📊 Densità</button>
+                        <button class="mode-btn active" data-mode="political">Politica</button>
+                        <button class="mode-btn" data-mode="population">Pop</button>
+                        <button class="mode-btn" data-mode="density">Densità</button>
                     </div>
                     
                     <div id="choropleth-legend-container">
@@ -183,49 +204,53 @@
                 </div>
 
                 <div class="control-group">
-                    <label>🖌️ Strumenti Pittura</label>
+                    <label>Gruppi & Strumenti Pittura</label>
                     <div class="toolbar-flex" style="margin-bottom: 10px;">
                         <div class="color-picker-wrapper">
                             <input type="color" id="colorPicker" value="#ef4444">
                             <span id="colorHex">#EF4444</span>
                         </div>
-                        <button class="btn" id="eraserBtn" title="Gomma">🧹</button>
+                        <button class="btn" id="eraserBtn" title="Gomma Cancella Tutto" style="background: var(--panel-bg);">🧹</button>
                     </div>
+                    
+                    <input type="text" id="factionNameInput" class="custom-input" placeholder="Nome Gruppo / Categoria..." value="Nuovo Gruppo" style="margin-bottom: 10px; border-color: var(--accent); color: #fff; font-weight: bold;">
+                    
                     <div style="position: relative;">
-                        <input type="text" id="searchInput" class="custom-input" placeholder="🔍 Cerca Nazione/Regione...">
+                        <input type="text" id="searchInput" class="custom-input" placeholder="Cerca Nazione/Regione da colorare...">
                         <div id="searchResults"></div>
                     </div>
                 </div>
 
                 <div class="control-group" id="inspector-panel">
-                    <label>📌 Ispettore Regione</label>
+                    <label>Ispettore Regione</label>
                     <div id="insp-name">Nessuna Selezione</div>
                     <div id="insp-admin">---</div>
                     <div class="insp-stat">Area: <span id="insp-area">0</span></div>
-                    <input type="number" id="insp-pop" class="custom-input" placeholder="Modifica Popolazione..." style="margin-bottom: 10px; background: rgba(0,0,0,0.5);">
+                    <input type="number" id="insp-pop" class="custom-input" placeholder="Popolazione..." style="margin-bottom: 10px; background: var(--panel-bg);">
                     <div class="insp-stat" style="border:none; margin-bottom:0;">Densità: <span id="insp-density" style="color:var(--accent);">0</span></div>
                 </div>
 
-                <div class="control-group" id="political-legend-container" style="display: none; flex-grow: 1;">
-                    <div class="legend-title">Legenda Nazioni <span class="legend-count" id="political-legend-count">0</span></div>
+                <div class="control-group" id="political-legend-container">
+                    <div class="legend-title">Legenda Gruppi <span class="legend-count" id="political-legend-count">0</span></div>
                     <div id="political-legend-list"></div>
                 </div>
 
-                <div class="control-group" style="padding: 12px; margin-top: auto; background: rgba(0,0,0,0.3);">
-                    <label style="margin-bottom: 6px;">📤 Esporta Mappa</label>
-                    <div class="toolbar-flex" style="margin-bottom: 10px;">
-                        <button class="btn btn-export" id="exportPng" title="Scarica Immagine PNG">PNG</button>
-                        <button class="btn btn-export" id="exportJpg" title="Scarica Immagine JPG">JPG</button>
-                        <button class="btn btn-export" id="exportPdf" title="Scarica Documento PDF" style="flex: 1.5; background: var(--accent); border-color: var(--accent); color: white;">📄 PDF</button>
+                <div class="control-group" style="padding: 12px; margin-top: auto; background: var(--panel-bg); border: none; border-top: 1px solid var(--border-light); border-radius: 0;">
+                    <label style="margin-bottom: 6px;">Esporta Progetto</label>
+                    <div class="export-grid">
+                        <button class="btn-export" id="exportPng" title="Scarica Immagine PNG">PNG</button>
+                        <button class="btn-export" id="exportJpg" title="Scarica Immagine JPG">JPG</button>
+                        <button class="btn-export" id="exportPdf" title="Scarica Documento PDF">PDF</button>
+                        <button class="btn-export" id="btnExportProject" title="Scarica Dati Progetto JSON">JSON</button>
                     </div>
                     
                     <div class="toolbar-flex">
-                        <select id="editorSaveSlot" style="width: 50%; font-size: 0.8rem; padding: 8px;">
+                        <select id="editorSaveSlot" style="width: 50%; font-size: 0.75rem; padding: 8px;">
                             <option value="slot_1">Salva in Slot 1</option>
                             <option value="slot_2">Salva in Slot 2</option>
                             <option value="slot_3">Salva in Slot 3</option>
                         </select>
-                        <button class="btn btn-success" id="btnSaveExit" style="width: 50%; font-size: 0.8rem; padding: 8px;">💾 Salva/Esci</button>
+                        <button class="btn btn-success" id="btnSaveExit" style="width: 50%; font-size: 0.75rem; padding: 8px;">Salva/Esci</button>
                     </div>
                 </div>
             </div>
@@ -233,420 +258,596 @@
 
         <div id="map-container"><svg id="world-map"></svg></div>
         <div id="tooltip"></div>
-        <div id="loading">Elaborazione Cartografica...<br><span style="font-size:0.9rem; color:var(--text-muted);" id="loading-sub">Questo potrebbe richiedere qualche secondo.</span></div>
+        <div id="loading">Elaborazione Cartografica...<br><span style="font-size:0.85rem; color:var(--text-muted); font-weight: normal;" id="loading-sub">Questo potrebbe richiedere qualche secondo.</span></div>
     </div>
 
     <div id="toast">Notifica</div>
 
     <script>
-const EARTH_RADIUS_KM = 6371;
-const defaultLandHex = "#1e293b"; 
-const URL_COUNTRIES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson";
-const URL_REGIONS = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_1_states_provinces.geojson";
-const URL_GLOBAL_HIGHRES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson";
+        const EARTH_RADIUS_KM = 6371;
+        const defaultLandHex = "#334155";
+        const URL_COUNTRIES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson";
+        const URL_REGIONS = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_1_states_provinces.geojson";
+        const URL_GLOBAL_HIGHRES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson";
 
-const AppManager = {
-    mapSources: {
-        world_complete: { url: URL_GLOBAL_HIGHRES, name: "Mondo Completo", prefill: true },
-        world_countries: { url: URL_COUNTRIES, name: "Mondo (Nazioni)", prefill: false },
-        world_regions: { url: URL_REGIONS, name: "Mondo (Regioni)", prefill: false },
-        eu_countries: { url: URL_COUNTRIES, name: "Europa (Nazioni)", prefill: false, continent: ["Europe"] },
-        eu_regions: { url: URL_REGIONS, name: "Europa (Regioni)", prefill: false, continent: ["Europe"] },
-        as_countries: { url: URL_COUNTRIES, name: "Asia (Nazioni)", prefill: false, continent: ["Asia"] },
-        as_regions: { url: URL_REGIONS, name: "Asia (Regioni)", prefill: false, continent: ["Asia"] },
-        am_countries: { url: URL_COUNTRIES, name: "Americhe (Nazioni)", prefill: false, continent: ["North America", "South America"] },
-        am_regions: { url: URL_REGIONS, name: "Americhe (Regioni)", prefill: false, continent: ["North America", "South America"] },
-        af_countries: { url: URL_COUNTRIES, name: "Africa (Nazioni)", prefill: false, continent: ["Africa"] },
-        af_regions: { url: URL_REGIONS, name: "Africa (Regioni)", prefill: false, continent: ["Africa"] },
-        oc_countries: { url: URL_COUNTRIES, name: "Oceania (Nazioni)", prefill: false, continent: ["Oceania"] },
-        oc_regions: { url: URL_REGIONS, name: "Oceania (Regioni)", prefill: false, continent: ["Oceania"] },
-        italy: { url: "https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_IT_regions.geojson", name: "Italia", prefill: false },
-        usa: { url: "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json", name: "USA", prefill: false }
-    },
-    showToast: (msg, err = false) => {
-        const t = document.getElementById("toast");
-        t.textContent = msg; t.style.background = err ? "var(--danger)" : "var(--success)";
-        t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(-10px)";
-        setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(0)"; }, 3000);
-    },
-    refreshSlots: () => {
-        for (let i = 1; i <= 3; i++) {
-            const data = localStorage.getItem(`mapchart_pro_final_v3_${i}`);
-            let text = `Slot ${i}: Vuoto`;
-            if (data) { try { const p = JSON.parse(data); text = `Slot ${i}: ${AppManager.mapSources[p.mapType].name}`; } catch(e){} }
-            document.getElementById('menuSaveSlot').options[i-1].text = text;
-        }
-    },
-    goToEditor: async (mapType, stateData = null) => {
-        document.getElementById('main-menu').style.display = 'none'; document.getElementById('editor-ui').style.display = 'block';
-        document.getElementById('currentMapDisplay').innerText = AppManager.mapSources[mapType].name;
-        editor.resize(); await editor.loadMap(mapType);
-        if (stateData) editor.applyState(stateData);
-    },
-    goToMenu: () => { document.getElementById('editor-ui').style.display = 'none'; document.getElementById('main-menu').style.display = 'flex'; AppManager.refreshSlots(); }
-};
-
-class GISMapEditor {
-    constructor() {
-        this.container = d3.select("#map-container"); this.svg = d3.select("#world-map");
-        this.tooltip = d3.select("#tooltip"); this.g = this.svg.append("g");
-        
-        this.currentColor = "#ef4444"; this.currentMode = "political";
-        this.currentFeatures = []; this.currentPathGenerator = null;
-        this.selectedFeatureIndex = null;
-        this.colorScale = d3.scaleOrdinal(d3.schemeSet3);
-
-        this.initUI(); this.initZoom();
-        window.addEventListener('resize', () => this.resize());
-    }
-
-    initUI() {
-        const cInput = document.getElementById('colorPicker');
-        cInput.addEventListener('input', e => { this.currentColor = e.target.value; document.getElementById('colorHex').textContent = this.currentColor.toUpperCase(); });
-        document.getElementById('eraserBtn').addEventListener('click', () => { this.currentColor = defaultLandHex; document.getElementById('colorHex').textContent = "GOMMA"; });
-        
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.addEventListener('click', e => {
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.currentMode = e.target.dataset.mode;
-                this.updateViewMode();
-            });
+        document.getElementById('importProjectFile').addEventListener('change', function(e) {
+            const fileName = e.target.files.length > 0 ? e.target.files[0].name : "Nessun file...";
+            document.getElementById('fileNameDisplay').textContent = fileName;
         });
 
-        document.getElementById('insp-pop').addEventListener('input', e => {
-            if (this.selectedFeatureIndex !== null) {
-                const d = this.currentFeatures[this.selectedFeatureIndex];
-                d.properties._population = Number(e.target.value);
-                const density = d.properties._population / d.properties._area_km2;
-                document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
-                if (this.currentMode !== 'political') this.updateViewMode();
-            }
-        });
+        const AppManager = {
+            mapSources: {
+                world_complete: { url: URL_GLOBAL_HIGHRES, name: "Mondo Completo", prefill: true },
+                world_countries: { url: URL_COUNTRIES, name: "Mondo (Nazioni)", prefill: false },
+                world_regions: { url: URL_REGIONS, name: "Mondo (Regioni)", prefill: false },
+                eu_countries: { url: URL_COUNTRIES, name: "Europa (Nazioni)", prefill: false, continent: ["Europe"] },
+                eu_regions: { url: URL_REGIONS, name: "Europa (Regioni)", prefill: false, continent: ["Europe"] },
+                as_countries: { url: URL_COUNTRIES, name: "Asia (Nazioni)", prefill: false, continent: ["Asia"] },
+                as_regions: { url: URL_REGIONS, name: "Asia (Regioni)", prefill: false, continent: ["Asia"] },
+                am_countries: { url: URL_COUNTRIES, name: "Americhe (Nazioni)", prefill: false, continent: ["North America", "South America"] },
+                am_regions: { url: URL_REGIONS, name: "Americhe (Regioni)", prefill: false, continent: ["North America", "South America"] },
+                af_countries: { url: URL_COUNTRIES, name: "Africa (Nazioni)", prefill: false, continent: ["Africa"] },
+                af_regions: { url: URL_REGIONS, name: "Africa (Regioni)", prefill: false, continent: ["Africa"] },
+                oc_countries: { url: URL_COUNTRIES, name: "Oceania (Nazioni)", prefill: false, continent: ["Oceania"] },
+                oc_regions: { url: URL_REGIONS, name: "Oceania (Regioni)", prefill: false, continent: ["Oceania"] },
+                italy: { url: "https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_IT_regions.geojson", name: "Italia", prefill: false },
+                usa: { url: URL_REGIONS, name: "USA", prefill: false, countryFilter: "United States of America" }
+            },
+            showToast: (msg, err = false) => {
+                const t = document.getElementById("toast");
+                t.textContent = msg; t.style.background = err ? "var(--danger)" : "var(--success)";
+                t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(-10px)";
+                setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(0)"; }, 3000);
+            },
+            refreshSlots: () => {
+                for (let i = 1; i <= 3; i++) {
+                    const data = localStorage.getItem(`mapchart_pro_final_v3_${i}`);
+                    let text = `Slot ${i}: Vuoto`;
+                    if (data) { 
+                        try { 
+                            const p = JSON.parse(data); 
+                            if(p && p.mapType && AppManager.mapSources[p.mapType]) {
+                                text = `Slot ${i}: ${AppManager.mapSources[p.mapType].name}`; 
+                            }
+                        } catch(e){} 
+                    }
+                    document.getElementById('menuSaveSlot').options[i-1].text = text;
+                }
+            },
+            goToEditor: async (mapType, stateData = null) => {
+                document.getElementById('main-menu').style.display = 'none'; document.getElementById('editor-ui').style.display = 'block';
+                document.getElementById('currentMapDisplay').innerText = AppManager.mapSources[mapType].name;
+                editor.resize(); await editor.loadMap(mapType);
+                if (stateData) editor.applyState(stateData);
+            },
+            goToMenu: () => { document.getElementById('editor-ui').style.display = 'none'; document.getElementById('main-menu').style.display = 'flex'; AppManager.refreshSlots(); }
+        };
 
-        document.getElementById('btnSaveExit').addEventListener('click', () => {
-            const slot = document.getElementById('editorSaveSlot').value.replace('slot_', '');
-            localStorage.setItem(`mapchart_pro_final_v3_${slot}`, JSON.stringify(this.generateState()));
-            AppManager.showToast("Salvato!"); AppManager.goToMenu();
-        });
-
-        document.getElementById('exportPng').addEventListener('click', () => this.exportMap('png'));
-        document.getElementById('exportJpg').addEventListener('click', () => this.exportMap('jpg'));
-        document.getElementById('exportPdf').addEventListener('click', () => this.exportMap('pdf'));
-
-        this.initSearch();
-    }
-
-    async exportMap(format) {
-        AppManager.showToast("Generazione file in corso...", false);
-        const mapContainer = document.getElementById('map-container');
-        
-        try {
-            this.tooltip.style("opacity", 0);
-            const canvas = await html2canvas(mapContainer, { backgroundColor: "#0f172a", scale: 2, logging: false });
-
-            if (format === 'png' || format === 'jpg') {
-                const link = document.createElement('a');
-                link.download = `MapChart_Export_${new Date().getTime()}.${format}`;
-                link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`, 0.95);
-                link.click();
-                AppManager.showToast(`Mappa esportata in ${format.toUpperCase()}!`);
-            } else if (format === 'pdf') {
-                const { jsPDF } = window.jspdf;
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
-                pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
-                pdf.save(`MapChart_Export_${new Date().getTime()}.pdf`);
-                AppManager.showToast("Mappa esportata in PDF!");
-            }
-        } catch (error) {
-            console.error("Export error:", error);
-            AppManager.showToast("Errore durante l'esportazione.", true);
-        }
-    }
-
-    calculateArea(feature) { return d3.geoArea(feature) * EARTH_RADIUS_KM * EARTH_RADIUS_KM; }
-    pickColor(color) { this.currentColor = color; document.getElementById('colorPicker').value = color; document.getElementById('colorHex').textContent = color.toUpperCase(); }
-
-    updateViewMode() {
-        const choroContainer = document.getElementById('choropleth-legend-container');
-        const poliContainer = document.getElementById('political-legend-container');
-        const legendBar = document.getElementById('choropleth-bar');
-
-        if (this.currentMode === 'political') {
-            choroContainer.style.display = 'none';
-            poliContainer.style.display = document.getElementById('political-legend-count').textContent !== "0" ? 'flex' : 'none';
-            this.g.selectAll(".area").transition().duration(300).attr("fill", d => d.properties._factionColor || defaultLandHex);
-            return;
-        }
-
-        choroContainer.style.display = 'block'; poliContainer.style.display = 'none'; 
-        const isPop = this.currentMode === 'population';
-        const validFeatures = this.currentFeatures.filter(d => (d.properties._population || 0) > 0);
-        let maxVal = 1;
-        if (validFeatures.length > 0) { maxVal = d3.max(validFeatures, d => isPop ? d.properties._population : (d.properties._population / d.properties._area_km2)); }
-
-        const interpolator = isPop ? d3.interpolateBlues : d3.interpolateYlOrRd;
-        const colorScale = d3.scaleSequentialPow(interpolator).exponent(0.3).domain([0, maxVal]);
-        
-        legendBar.style.background = `linear-gradient(to right, ${interpolator(0)}, ${interpolator(0.25)}, ${interpolator(0.5)}, ${interpolator(0.75)}, ${interpolator(1)})`;
-        document.getElementById('choro-max').textContent = isPop ? (maxVal/1000000).toFixed(1) + "M" : maxVal.toFixed(0) + " ab/km²";
-
-        this.g.selectAll(".area").transition().duration(300)
-            .attr("fill", d => {
-                const pop = d.properties._population || 0;
-                if (pop === 0) return defaultLandHex; 
-                return colorScale(isPop ? pop : (pop / d.properties._area_km2));
-            });
-    }
-
-    generatePoliticalLegend() {
-        const legendList = document.getElementById('political-legend-list'); legendList.innerHTML = '';
-        const countryColors = new Map();
-
-        this.currentFeatures.forEach(d => {
-             const col = d.properties._factionColor;
-             const name = d.properties.admin || d.properties.NAME || d.properties.admin0;
-             if (col && col !== defaultLandHex && name) { if (!countryColors.has(name)) countryColors.set(name, col); }
-        });
-
-        document.getElementById('political-legend-count').textContent = countryColors.size;
-        if (countryColors.size === 0) return;
-
-        Array.from(countryColors.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([name, color]) => {
-            const item = document.createElement('div'); item.className = 'poli-legend-item';
-            item.innerHTML = `<div class="poli-color-box" style="background: ${color};"></div><span>${name}</span>`;
-            item.querySelector('.poli-color-box').addEventListener('click', () => this.pickColor(color));
-            legendList.appendChild(item);
-        });
-    }
-
-    initSearch() {
-        const sInput = document.getElementById('searchInput'); const sResults = document.getElementById('searchResults');
-        sInput.addEventListener('input', e => {
-            const val = e.target.value.toLowerCase().trim(); sResults.innerHTML = '';
-            if (val.length < 2) { sResults.style.display = 'none'; return; }
-            
-            const matchedNations = new Set(); const matchedRegions = [];
-            this.currentFeatures.forEach(d => {
-                const name = (d.properties.name || d.properties.NAME || d.properties.reg_name || "").toLowerCase();
-                const admin = (d.properties.admin || d.properties.admin0 || "").toLowerCase();
-                if (admin.includes(val) && admin !== "") matchedNations.add(d.properties.admin || d.properties.admin0);
-                if (name.includes(val)) matchedRegions.push(d);
-            });
-
-            let hasResults = false;
-            if (matchedNations.size > 0) {
-                hasResults = true;
-                const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Nazioni Intere'; sResults.appendChild(catTitle);
-                Array.from(matchedNations).slice(0, 5).forEach(nation => {
-                    const div = document.createElement('div'); div.className = 'search-item'; div.innerHTML = `<b>${nation}</b> <span>Colora Tutto</span>`;
-                    div.addEventListener('click', () => { this.colorAndZoomNation(nation); sInput.value = ''; sResults.style.display = 'none'; });
-                    sResults.appendChild(div);
-                });
-            }
-            if (matchedRegions.length > 0) {
-                hasResults = true;
-                const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Singole Aree'; sResults.appendChild(catTitle);
-                matchedRegions.slice(0, 10).forEach(d => {
-                    const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area";
-                    const div = document.createElement('div'); div.className = 'search-item'; div.innerHTML = `${areaName} <span>${d.properties.admin || ""}</span>`;
-                    div.addEventListener('click', () => { this.selectAndInspect(d); this.zoomToFeature(d); sInput.value = ''; sResults.style.display = 'none'; });
-                    sResults.appendChild(div);
-                });
-            }
-            sResults.style.display = hasResults ? 'block' : 'none';
-        });
-    }
-
-    colorAndZoomNation(nationName) {
-        this.g.selectAll(".area").filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName)).each(d => d.properties._factionColor = this.currentColor);
-        this.generatePoliticalLegend(); if(this.currentMode === 'political') this.updateViewMode();
-
-        const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
-        if (matchingFeatures.length === 0 || !this.currentPathGenerator) return;
-        
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        matchingFeatures.forEach(d => {
-            const b = this.currentPathGenerator.bounds(d);
-            if (b[0][0] < minX) minX = b[0][0]; if (b[0][1] < minY) minY = b[0][1];
-            if (b[1][0] > maxX) maxX = b[1][0]; if (b[1][1] > maxY) maxY = b[1][1];
-        });
-        const dx = maxX - minX, dy = maxY - minY, x = (minX + maxX) / 2, y = (minY + maxY) / 2;
-        const scale = Math.max(1, Math.min(40, 0.8 / Math.max(dx / this.width, dy / this.height)));
-        this.svg.transition().duration(1200).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
-    }
-
-    selectAndInspect(d) {
-        const i = this.currentFeatures.indexOf(d); this.selectedFeatureIndex = i;
-        document.getElementById('inspector-panel').style.display = 'block';
-        document.getElementById('insp-name').textContent = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area Sconosciuta";
-        document.getElementById('insp-admin').textContent = d.properties.admin || d.properties.admin0 || "---";
-        document.getElementById('insp-area').textContent = d.properties._area_km2.toLocaleString('it-IT', {maximumFractionDigits:0}) + " km²";
-        const pop = d.properties._population || 0;
-        document.getElementById('insp-pop').value = pop > 0 ? pop : "";
-        const density = pop > 0 ? pop / d.properties._area_km2 : 0;
-        document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
-
-        d.properties._factionColor = this.currentColor;
-        this.generatePoliticalLegend();
-        if(this.currentMode === 'political') { d3.select("#path-" + i).attr("fill", this.currentColor); }
-    }
-
-    zoomToFeature(d) {
-        const b = this.currentPathGenerator.bounds(d), dx = b[1][0] - b[0][0], dy = b[1][1] - b[0][1], x = (b[0][0] + b[1][0]) / 2, y = (b[0][1] + b[1][1]) / 2;
-        const scale = Math.max(1, Math.min(60, 0.5 / Math.max(dx / this.width, dy / this.height)));
-        this.svg.transition().duration(800).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
-    }
-
-    generateState() {
-        const stateData = {};
-        this.currentFeatures.forEach((d, i) => { 
-            if ((d.properties._factionColor && d.properties._factionColor !== defaultLandHex) || d.properties._population > 0) {
-                stateData[i] = { c: d.properties._factionColor, p: d.properties._population || 0 };
-            } 
-        });
-        return { mapType: this.currentMapType, data: stateData };
-    }
-
-    applyState(state) {
-        this.currentFeatures.forEach((d, i) => {
-            const saved = state.data[i];
-            d.properties._factionColor = saved ? saved.c : defaultLandHex;
-            d.properties._population = saved ? saved.p : 0;
-        });
-        this.generatePoliticalLegend(); this.updateViewMode();
-    }
-
-    initZoom() { 
-        this.zoom = d3.zoom().scaleExtent([0.5, 250]).on("zoom", e => this.g.attr("transform", e.transform)); 
-        this.svg.call(this.zoom); 
-    }
-    
-    resize() { if(document.getElementById('editor-ui').style.display !== 'none') { this.width = this.container.node().getBoundingClientRect().width; this.height = this.container.node().getBoundingClientRect().height; } }
-
-    async loadMap(mapType) {
-        const config = AppManager.mapSources[mapType];
-        this.currentMapType = mapType; this.g.selectAll("*").remove(); 
-        document.getElementById("loading").style.display = "block";
-        
-        document.getElementById('inspector-panel').style.display = 'none';
-        document.getElementById('political-legend-container').style.display = 'none'; 
-        document.getElementById('political-legend-list').innerHTML = ''; 
-        document.getElementById('political-legend-count').textContent = "0"; 
-        document.getElementById('searchInput').value = ''; 
-        document.getElementById('searchResults').style.display = 'none';
-        this.selectedFeatureIndex = null;
-        this.colorScale = d3.scaleOrdinal(d3.schemeSet3); 
-
-        try {
-            const res = await fetch(config.url); 
-            let geoData = await res.json();
-            
-            if (config.continent) {
-                document.getElementById("loading-sub").textContent = "Filtro geografico in corso...";
-                let validCountries = null;
+        class GISMapEditor {
+            constructor() {
+                this.container = d3.select("#map-container"); this.svg = d3.select("#world-map");
+                this.tooltip = d3.select("#tooltip"); this.g = this.svg.append("g");
                 
-                if (config.url === URL_REGIONS) {
-                    const admin0Res = await fetch(URL_COUNTRIES);
-                    const admin0Data = await admin0Res.json();
-                    validCountries = new Set(
-                        admin0Data.features
-                            .filter(f => config.continent.includes(f.properties.CONTINENT))
-                            .map(f => f.properties.ADMIN || f.properties.admin || f.properties.admin0)
-                    );
+                this.currentColor = "#ef4444"; this.currentMode = "political";
+                this.currentFeatures = []; this.currentPathGenerator = null;
+                this.selectedFeatureIndex = null;
+
+                this.initUI(); this.initZoom();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            getFactionNameForColor(hexColor) {
+                for (let i = 0; i < this.currentFeatures.length; i++) {
+                    const props = this.currentFeatures[i].properties;
+                    if (props._factionColor && props._factionColor.toLowerCase() === hexColor.toLowerCase()) {
+                        return props._factionName;
+                    }
+                }
+                return null;
+            }
+
+            initUI() {
+                const cInput = document.getElementById('colorPicker');
+                cInput.addEventListener('input', e => { 
+                    this.currentColor = e.target.value; 
+                    document.getElementById('colorHex').textContent = this.currentColor.toUpperCase(); 
+                    
+                    // Comodità: Se scegli un colore noto, ti ricorda come si chiamava. Ma puoi cancellarlo.
+                    const existingName = this.getFactionNameForColor(this.currentColor);
+                    if (existingName) {
+                        document.getElementById('factionNameInput').value = existingName;
+                    }
+                });
+                
+                document.getElementById('eraserBtn').addEventListener('click', () => { 
+                    this.currentColor = defaultLandHex; 
+                    document.getElementById('colorHex').textContent = "GOMMA"; 
+                    document.getElementById('factionNameInput').value = "";
+                });
+                
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', e => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentMode = e.target.dataset.mode;
+                        this.updateViewMode();
+                    });
+                });
+
+                document.getElementById('insp-pop').addEventListener('input', e => {
+                    if (this.selectedFeatureIndex !== null) {
+                        const d = this.currentFeatures[this.selectedFeatureIndex];
+                        d.properties._population = Number(e.target.value);
+                        const density = d.properties._population / d.properties._area_km2;
+                        document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
+                        if (this.currentMode !== 'political') this.updateViewMode();
+                    }
+                });
+
+                document.getElementById('btnSaveExit').addEventListener('click', () => {
+                    try {
+                        const slot = document.getElementById('editorSaveSlot').value.replace('slot_', '');
+                        localStorage.setItem(`mapchart_pro_final_v3_${slot}`, JSON.stringify(this.generateState()));
+                        AppManager.showToast("Salvato in Memoria Locale!"); 
+                    } catch (err) {
+                        AppManager.showToast("Salvataggio fallito: Browser Sandbox?", true);
+                    }
+                    AppManager.goToMenu();
+                });
+
+                document.getElementById('btnExportProject').addEventListener('click', () => {
+                    const data = JSON.stringify(this.generateState());
+                    const blob = new Blob([data], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = `MegaMap_Project_${new Date().getTime()}.json`;
+                    a.click(); URL.revokeObjectURL(url);
+                    AppManager.showToast("Progetto esportato su disco!");
+                });
+
+                document.getElementById('exportPng').addEventListener('click', () => this.exportMap('png'));
+                document.getElementById('exportJpg').addEventListener('click', () => this.exportMap('jpg'));
+                document.getElementById('exportPdf').addEventListener('click', () => this.exportMap('pdf'));
+
+                this.initSearch();
+            }
+
+            async exportMap(format) {
+                AppManager.showToast("Generazione file in corso...", false);
+                const mapContainer = document.getElementById('map-container');
+                
+                try {
+                    this.tooltip.style("opacity", 0);
+                    const canvas = await html2canvas(mapContainer, { backgroundColor: "#1e293b", scale: 2, logging: false });
+
+                    if (format === 'png' || format === 'jpg') {
+                        const link = document.createElement('a');
+                        link.download = `MapChart_Export_${new Date().getTime()}.${format}`;
+                        link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`, 0.95);
+                        link.click();
+                        AppManager.showToast(`Mappa esportata in ${format.toUpperCase()}!`);
+                    } else if (format === 'pdf') {
+                        const { jsPDF } = window.jspdf;
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
+                        pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+                        pdf.save(`MapChart_Export_${new Date().getTime()}.pdf`);
+                        AppManager.showToast("Mappa esportata in PDF!");
+                    }
+                } catch (error) {
+                    console.error("Export error:", error);
+                    AppManager.showToast("Errore durante l'esportazione.", true);
+                }
+            }
+
+            calculateArea(feature) { return d3.geoArea(feature) * EARTH_RADIUS_KM * EARTH_RADIUS_KM; }
+            
+            pickColor(color) { 
+                this.currentColor = color; 
+                document.getElementById('colorPicker').value = color; 
+                document.getElementById('colorHex').textContent = color.toUpperCase(); 
+            }
+
+            updateViewMode() {
+                const choroContainer = document.getElementById('choropleth-legend-container');
+                const poliContainer = document.getElementById('political-legend-container');
+                const legendBar = document.getElementById('choropleth-bar');
+
+                if (this.currentMode === 'political') {
+                    choroContainer.style.display = 'none';
+                    poliContainer.style.display = 'flex'; 
+                    this.g.selectAll(".area").transition().duration(200).attr("fill", d => d.properties._factionColor || defaultLandHex);
+                    return;
                 }
 
-                geoData.features = geoData.features.filter(d => {
-                    let keep = false;
-                    const adminName = d.properties.admin || d.properties.admin0 || d.properties.NAME;
+                choroContainer.style.display = 'block'; poliContainer.style.display = 'none'; 
+                const isPop = this.currentMode === 'population';
+                const validFeatures = this.currentFeatures.filter(d => (d.properties._population || 0) > 0);
+                let maxVal = 1;
+                if (validFeatures.length > 0) { maxVal = d3.max(validFeatures, d => isPop ? d.properties._population : (d.properties._population / d.properties._area_km2)); }
 
-                    if (validCountries) {
-                        keep = validCountries.has(adminName);
+                const interpolator = isPop ? d3.interpolateBlues : d3.interpolateYlOrRd;
+                const colorScale = d3.scaleSequentialPow(interpolator).exponent(0.3).domain([0, maxVal]);
+                
+                legendBar.style.background = `linear-gradient(to right, ${interpolator(0)}, ${interpolator(0.25)}, ${interpolator(0.5)}, ${interpolator(0.75)}, ${interpolator(1)})`;
+                document.getElementById('choro-max').textContent = isPop ? (maxVal/1000000).toFixed(1) + "M" : maxVal.toFixed(0) + " ab/km²";
+
+                this.g.selectAll(".area").transition().duration(200)
+                    .attr("fill", d => {
+                        const pop = d.properties._population || 0;
+                        if (pop === 0) return defaultLandHex; 
+                        return colorScale(isPop ? pop : (pop / d.properties._area_km2));
+                    });
+            }
+
+            generatePoliticalLegend() {
+                const legendList = document.getElementById('political-legend-list'); 
+                legendList.innerHTML = '';
+                
+                const factionMap = new Map(); 
+
+                this.currentFeatures.forEach(d => {
+                     const col = d.properties._factionColor;
+                     const facName = d.properties._factionName;
+                     
+                     if (col && col.toLowerCase() !== defaultLandHex.toLowerCase() && facName) { 
+                         if (!factionMap.has(col)) { 
+                             factionMap.set(col, facName); 
+                         } 
+                     }
+                });
+
+                document.getElementById('political-legend-count').textContent = factionMap.size;
+                if (factionMap.size === 0) return;
+
+                Array.from(factionMap.entries()).sort((a, b) => a[1].localeCompare(b[1])).forEach(([color, name]) => {
+                    const item = document.createElement('div'); 
+                    item.className = 'poli-legend-item';
+                    item.innerHTML = `<div class="poli-color-box" style="background: ${color};"></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight: bold;">${name}</span>`;
+                    
+                    item.addEventListener('click', () => {
+                        this.pickColor(color);
+                        document.getElementById('factionNameInput').value = name;
+                    });
+                    
+                    legendList.appendChild(item);
+                });
+            }
+
+            initSearch() {
+                const sInput = document.getElementById('searchInput'); const sResults = document.getElementById('searchResults');
+                sInput.addEventListener('input', e => {
+                    const val = e.target.value.toLowerCase().trim(); sResults.innerHTML = '';
+                    if (val.length < 2) { sResults.style.display = 'none'; return; }
+                    
+                    const matchedNations = new Set(); const matchedRegions = [];
+                    this.currentFeatures.forEach(d => {
+                        const name = (d.properties.name || d.properties.NAME || d.properties.reg_name || "").toLowerCase();
+                        const admin = (d.properties.admin || d.properties.admin0 || "").toLowerCase();
+                        if (admin.includes(val) && admin !== "") matchedNations.add(d.properties.admin || d.properties.admin0);
+                        if (name.includes(val)) matchedRegions.push(d);
+                    });
+
+                    let hasResults = false;
+                    if (matchedNations.size > 0) {
+                        hasResults = true;
+                        const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Nazioni Intere'; sResults.appendChild(catTitle);
+                        Array.from(matchedNations).slice(0, 5).forEach(nation => {
+                            const div = document.createElement('div'); div.className = 'search-item'; div.innerHTML = `<b>${nation}</b> <span>Colora Tutto</span>`;
+                            div.addEventListener('click', () => { this.colorAndZoomNation(nation); sInput.value = ''; sResults.style.display = 'none'; });
+                            sResults.appendChild(div);
+                        });
+                    }
+                    if (matchedRegions.length > 0) {
+                        hasResults = true;
+                        const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Singole Aree'; sResults.appendChild(catTitle);
+                        matchedRegions.slice(0, 10).forEach(d => {
+                            const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area";
+                            const div = document.createElement('div'); div.className = 'search-item'; div.innerHTML = `${areaName} <span>${d.properties.admin || ""}</span>`;
+                            div.addEventListener('click', () => { this.selectAndInspect(d); this.zoomToFeature(d); sInput.value = ''; sResults.style.display = 'none'; });
+                            sResults.appendChild(div);
+                        });
+                    }
+                    sResults.style.display = hasResults ? 'block' : 'none';
+                });
+            }
+
+            colorAndZoomNation(nationName) {
+                let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
+
+                // RINOMINA RETROATTIVA: Se l'utente ha scritto un nome diverso nella casella per un colore esistente, lo applichiamo a TUTTO il gruppo
+                if (this.currentColor.toLowerCase() !== defaultLandHex.toLowerCase()) {
+                    this.currentFeatures.forEach(f => {
+                        if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) {
+                            f.properties._factionName = targetName;
+                        }
+                    });
+                }
+
+                this.g.selectAll(".area").filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName)).each(d => {
+                    if(this.currentColor.toLowerCase() === defaultLandHex.toLowerCase()) {
+                        d.properties._factionColor = defaultLandHex;
+                        delete d.properties._factionName;
                     } else {
-                        keep = config.continent.includes(d.properties.CONTINENT);
+                        d.properties._factionColor = this.currentColor;
+                        d.properties._factionName = targetName;
                     }
-
-                    if (keep && config.url === URL_REGIONS) {
-                        const centroid = d3.geoCentroid(d); 
-                        const lon = centroid[0];
-                        const lat = centroid[1];
-
-                        if (adminName === "Russia") {
-                            if (config.continent.includes("Europe") && lon >= 60) keep = false; 
-                            if (config.continent.includes("Asia") && lon < 60) keep = false;
-                        }
-                        if (adminName === "Turkey") {
-                            if (config.continent.includes("Europe") && lon >= 28) keep = false;
-                            if (config.continent.includes("Asia") && lon < 28) keep = false;
-                        }
-                        if (adminName === "France" || adminName === "Netherlands") {
-                            if (config.continent.includes("Europe") && (lon < -30 || lon > 40 || lat < 30)) keep = false;
-                        }
-                    }
-                    return keep;
                 });
-            }
-            
-            document.getElementById("loading-sub").textContent = "Costruzione geometria vettoriale...";
-
-            geoData.features.forEach(d => { 
-                d.properties._area_km2 = this.calculateArea(d); 
-                if (config.prefill) {
-                    d.properties._population = Math.max(0, d.properties.POP_EST || 0);
-                    const countryName = d.properties.admin || d.properties.NAME || d.properties.admin0 || d.properties.reg_name || "N/A";
-                    d.properties._factionColor = this.colorScale(countryName);
-                } else {
-                    d.properties._population = 0;
-                    d.properties._factionColor = defaultLandHex; 
-                }
-            });
-            
-            this.currentFeatures = geoData.features; this.drawMap(geoData);
-            if (config.prefill) this.generatePoliticalLegend();
-
-        } catch (e) { AppManager.showToast("Errore di caricamento.", true); console.error(e);}
-        document.getElementById("loading").style.display = "none";
-    }
-
-    drawMap(geoData) {
-        const proj = d3.geoMercator().fitSize([this.width - 20, this.height - 20], geoData);
-        this.currentPathGenerator = d3.geoPath().projection(proj);
-
-        this.g.selectAll("path").data(geoData.features).enter().append("path").attr("class", "area").attr("id", (d,i) => "path-"+i)
-            .attr("d", this.currentPathGenerator).attr("fill", defaultLandHex)
-            .on("mouseover", (e, d) => {
-                const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area Sconosciuta";
-                const adminName = d.properties.admin || d.properties.admin0 || "";
                 
-                let t = `<b>${areaName}</b>`;
-                if (adminName) t += `<br><span style="color:#94a3b8; font-size:11px;">${adminName}</span>`;
+                this.generatePoliticalLegend(); if(this.currentMode === 'political') this.updateViewMode();
+
+                const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
+                if (matchingFeatures.length === 0 || !this.currentPathGenerator) return;
+                
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                matchingFeatures.forEach(d => {
+                    const b = this.currentPathGenerator.bounds(d);
+                    if (b[0][0] < minX) minX = b[0][0]; if (b[0][1] < minY) minY = b[0][1];
+                    if (b[1][0] > maxX) maxX = b[1][0]; if (b[1][1] > maxY) maxY = b[1][1];
+                });
+                const dx = maxX - minX, dy = maxY - minY, x = (minX + maxX) / 2, y = (minY + maxY) / 2;
+                const scale = Math.max(1, Math.min(40, 0.8 / Math.max(dx / this.width, dy / this.height)));
+                this.svg.transition().duration(800).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
+            }
+
+            selectAndInspect(d) {
+                const i = this.currentFeatures.indexOf(d); this.selectedFeatureIndex = i;
+                document.getElementById('inspector-panel').style.display = 'block';
+                document.getElementById('insp-name').textContent = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area Sconosciuta";
+                document.getElementById('insp-admin').textContent = d.properties.admin || d.properties.admin0 || "---";
+                document.getElementById('insp-area').textContent = d.properties._area_km2.toLocaleString('it-IT', {maximumFractionDigits:0}) + " km²";
                 
                 const pop = d.properties._population || 0;
-                if (pop > 0) {
-                    const dens = pop / d.properties._area_km2;
-                    t += `<hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:6px 0;">`;
-                    t += `<span style="font-size:12px; color:#a7f3d0;">Pop: ${pop.toLocaleString()} | Densità: ${dens.toFixed(1)}</span>`;
+                document.getElementById('insp-pop').value = pop > 0 ? pop : "";
+                
+                const density = pop > 0 ? pop / d.properties._area_km2 : 0;
+                document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
+
+                if (this.currentColor.toLowerCase() === defaultLandHex.toLowerCase()) {
+                    d.properties._factionColor = defaultLandHex;
+                    delete d.properties._factionName;
+                } else {
+                    let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
+                    
+                    // RINOMINA RETROATTIVA: Aggiorna tutte le nazioni che condividono questo colore
+                    this.currentFeatures.forEach(f => {
+                        if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) {
+                            f.properties._factionName = targetName;
+                        }
+                    });
+                    
+                    d.properties._factionColor = this.currentColor;
+                    d.properties._factionName = targetName;
                 }
-                this.tooltip.style("opacity", 1).html(t);
-            })
-            .on("mousemove", e => this.tooltip.style("left", (e.pageX + 15)+"px").style("top", (e.pageY - 15)+"px"))
-            .on("mouseout", () => this.tooltip.style("opacity", 0))
-            .on("click", (e, d) => { this.selectAndInspect(d); });
+                
+                this.generatePoliticalLegend();
+                this.updateViewMode();
+                if(this.currentMode === 'political') { d3.select("#path-" + i).attr("fill", this.currentColor); }
+            }
+
+            zoomToFeature(d) {
+                const b = this.currentPathGenerator.bounds(d), dx = b[1][0] - b[0][0], dy = b[1][1] - b[0][1], x = (b[0][0] + b[1][0]) / 2, y = (b[0][1] + b[1][1]) / 2;
+                const scale = Math.max(1, Math.min(60, 0.5 / Math.max(dx / this.width, dy / this.height)));
+                this.svg.transition().duration(800).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
+            }
+
+            generateState() {
+                const stateData = {};
+                this.currentFeatures.forEach((d, i) => { 
+                    if ((d.properties._factionColor && d.properties._factionColor !== defaultLandHex) || d.properties._population > 0) {
+                        stateData[i] = { 
+                            c: d.properties._factionColor, 
+                            f: d.properties._factionName,
+                            p: d.properties._population || 0 
+                        };
+                    } 
+                });
+                return { mapType: this.currentMapType, data: stateData };
+            }
+
+            applyState(state) {
+                this.currentFeatures.forEach((d, i) => {
+                    const saved = state.data[i];
+                    d.properties._factionColor = saved && saved.c ? saved.c : defaultLandHex;
+                    d.properties._factionName = saved && saved.f ? saved.f : undefined;
+                    d.properties._population = saved && saved.p ? saved.p : 0;
+                });
+                this.generatePoliticalLegend(); this.updateViewMode();
+            }
+
+            initZoom() { 
+                this.zoom = d3.zoom().scaleExtent([0.5, 250]).on("zoom", e => this.g.attr("transform", e.transform)); 
+                this.svg.call(this.zoom); 
+            }
+            
+            resize() { if(document.getElementById('editor-ui').style.display !== 'none') { this.width = this.container.node().getBoundingClientRect().width; this.height = this.container.node().getBoundingClientRect().height; } }
+
+            async loadMap(mapType) {
+                const config = AppManager.mapSources[mapType];
+                this.currentMapType = mapType; this.g.selectAll("*").remove(); 
+                document.getElementById("loading").style.display = "block";
+                
+                document.getElementById('inspector-panel').style.display = 'none';
+                document.getElementById('political-legend-list').innerHTML = ''; 
+                document.getElementById('political-legend-count').textContent = "0"; 
+                document.getElementById('searchInput').value = ''; 
+                document.getElementById('searchResults').style.display = 'none';
+                this.selectedFeatureIndex = null;
+
+                try {
+                    const res = await fetch(config.url); 
+                    if(!res.ok) throw new Error("Errore network");
+                    let geoData = await res.json();
+                    
+                    if (config.countryFilter) {
+                        document.getElementById("loading-sub").textContent = "Filtro nazione in corso...";
+                        geoData.features = geoData.features.filter(d => {
+                            const admin = d.properties.admin || d.properties.admin0 || d.properties.NAME || "";
+                            return admin === config.countryFilter;
+                        });
+                    } else if (config.continent) {
+                        document.getElementById("loading-sub").textContent = "Filtro geografico in corso...";
+                        let validCountries = null;
+                        
+                        if (config.url === URL_REGIONS) {
+                            const admin0Res = await fetch(URL_COUNTRIES);
+                            const admin0Data = await admin0Res.json();
+                            validCountries = new Set(
+                                admin0Data.features
+                                    .filter(f => config.continent.includes(f.properties.CONTINENT))
+                                    .map(f => f.properties.ADMIN || f.properties.admin || f.properties.admin0)
+                            );
+                        }
+
+                        geoData.features = geoData.features.filter(d => {
+                            let keep = false;
+                            const adminName = d.properties.admin || d.properties.admin0 || d.properties.NAME;
+
+                            if (validCountries) {
+                                keep = validCountries.has(adminName);
+                            } else {
+                                keep = config.continent.includes(d.properties.CONTINENT);
+                            }
+
+                            if (keep && config.url === URL_REGIONS) {
+                                const centroid = d3.geoCentroid(d); 
+                                const lon = centroid[0];
+                                const lat = centroid[1];
+
+                                if (adminName === "Russia") {
+                                    if (config.continent.includes("Europe") && lon >= 60) keep = false; 
+                                    if (config.continent.includes("Asia") && lon < 60) keep = false;
+                                }
+                                if (adminName === "Turkey") {
+                                    if (config.continent.includes("Europe") && lon >= 28) keep = false;
+                                    if (config.continent.includes("Asia") && lon < 28) keep = false;
+                                }
+                                if (adminName === "France" || adminName === "Netherlands") {
+                                    if (config.continent.includes("Europe") && (lon < -30 || lon > 40 || lat < 30)) keep = false;
+                                }
+                            }
+                            return keep;
+                        });
+                    }
+                    
+                    document.getElementById("loading-sub").textContent = "Costruzione colori univoci...";
+
+                    const uniqueAdmins = Array.from(new Set(geoData.features.map(d => d.properties.admin || d.properties.admin0 || d.properties.NAME || "N/A")));
+                    const colorMap = new Map();
+                    const usedHex = new Set([defaultLandHex.toLowerCase()]); 
+                    
+                    uniqueAdmins.forEach((admin, index) => {
+                        let hue = (index * 137.508) % 360; 
+                        let saturation = 65 + (index % 3) * 10; 
+                        let lightness = 50 + (index % 4) * 10;  
+                        let hex = d3.color(`hsl(${hue}, ${saturation}%, ${lightness}%)`).formatHex().toLowerCase();
+                        
+                        let tweak = 0;
+                        while(usedHex.has(hex)) {
+                            tweak++;
+                            hue = (hue + tweak * 11) % 360;
+                            hex = d3.color(`hsl(${hue}, ${saturation}%, ${lightness}%)`).formatHex().toLowerCase();
+                        }
+                        usedHex.add(hex);
+                        colorMap.set(admin, hex);
+                    });
+
+                    geoData.features.forEach(d => { 
+                        d.properties._area_km2 = this.calculateArea(d); 
+                        if (config.prefill) {
+                            d.properties._population = Math.max(0, d.properties.POP_EST || 0);
+                            const countryName = d.properties.admin || d.properties.NAME || d.properties.admin0 || d.properties.reg_name || "N/A";
+                            
+                            d.properties._factionColor = colorMap.get(countryName);
+                            d.properties._factionName = countryName; 
+                            
+                        } else {
+                            d.properties._population = 0;
+                            d.properties._factionColor = defaultLandHex; 
+                        }
+                    });
+                    
+                    this.currentFeatures = geoData.features; 
+                    this.drawMap(geoData);
+
+                } catch (e) { AppManager.showToast("Errore di caricamento mappa.", true); console.error(e);}
+                document.getElementById("loading").style.display = "none";
+            }
+
+            drawMap(geoData) {
+                let proj;
+                
+                if (this.currentMapType === 'usa') {
+                    const validStates = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","District of Columbia","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+                    
+                    geoData.features = geoData.features.filter(d => validStates.includes(d.properties.name || d.properties.NAME));
+                    
+                    proj = d3.geoAlbersUsa().fitSize([this.width - 20, this.height - 20], geoData);
+                } else {
+                    proj = d3.geoMercator().fitSize([this.width - 20, this.height - 20], geoData);
+                }
+
+                this.currentPathGenerator = d3.geoPath().projection(proj);
+
+                this.g.selectAll("path").data(geoData.features).enter().append("path").attr("class", "area").attr("id", (d,i) => "path-"+i)
+                    .attr("d", this.currentPathGenerator).attr("fill", defaultLandHex)
+                    .on("mouseover", (e, d) => {
+                        const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area Sconosciuta";
+                        const adminName = d.properties.admin || d.properties.admin0 || "";
+                        
+                        let t = `<b style="display:block; margin-bottom:2px;">${areaName}</b>`;
+                        if (adminName) t += `<span style="color:var(--accent); font-size:10px; text-transform:uppercase;">${adminName}</span>`;
+                        
+                        // ORA È UN PULITO INDICATORE NEUTRO INVECE DELLE SPADE
+                        if (d.properties._factionName) {
+                            t += `<div style="margin-top:4px; font-size:11px; color:#facc15; font-weight:bold;">● ${d.properties._factionName}</div>`;
+                        }
+
+                        const pop = d.properties._population || 0;
+                        if (pop > 0) {
+                            const dens = pop / d.properties._area_km2;
+                            t += `<hr style="border:0; border-top:1px solid var(--border-light); margin:6px 0;">`;
+                            t += `<span style="font-size:11px; color:var(--success);">Pop: ${pop.toLocaleString()} | Dens: ${dens.toFixed(1)}</span>`;
+                        }
+                        this.tooltip.style("opacity", 1).html(t);
+                    })
+                    .on("mousemove", e => this.tooltip.style("left", (e.pageX + 15)+"px").style("top", (e.pageY - 15)+"px"))
+                    .on("mouseout", () => this.tooltip.style("opacity", 0))
+                    .on("click", (e, d) => { this.selectAndInspect(d); });
+                
+                this.generatePoliticalLegend();
+                this.updateViewMode();
+            }
+        }
+
+        const editor = new GISMapEditor();
+        AppManager.refreshSlots();
+
+        document.getElementById('btnStartNew').addEventListener('click', () => AppManager.goToEditor(document.getElementById('startMapSelector').value));
         
-        this.updateViewMode();
-    }
-}
+        document.getElementById('btnLoadLocal').addEventListener('click', () => {
+            const slot = document.getElementById('menuSaveSlot').value.replace('slot_', '');
+            const data = localStorage.getItem(`mapchart_pro_final_v3_${slot}`);
+            if (data) AppManager.goToEditor(JSON.parse(data).mapType, JSON.parse(data)); else AppManager.showToast("Slot vuoto", true);
+        });
 
-const editor = new GISMapEditor();
-AppManager.refreshSlots();
-
-document.getElementById('btnStartNew').addEventListener('click', () => AppManager.goToEditor(document.getElementById('startMapSelector').value));
-document.getElementById('btnLoadLocal').addEventListener('click', () => {
-    const slot = document.getElementById('menuSaveSlot').value.replace('slot_', '');
-    const data = localStorage.getItem(`mapchart_pro_final_v3_${slot}`);
-    if (data) AppManager.goToEditor(JSON.parse(data).mapType, JSON.parse(data)); else AppManager.showToast("Slot vuoto", true);
-});
+        document.getElementById('btnImportProject').addEventListener('click', () => {
+            const fileInput = document.getElementById('importProjectFile');
+            if (!fileInput.files.length) { AppManager.showToast("Seleziona un file prima!", true); return; }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const stateData = JSON.parse(e.target.result);
+                    if (!stateData.mapType) throw new Error("Formato progetto non valido");
+                    AppManager.goToEditor(stateData.mapType, stateData);
+                } catch (err) {
+                    AppManager.showToast("File JSON corrotto o invalido.", true);
+                }
+            };
+            reader.readAsText(file);
+        });
     </script>
 </body>
 </html>
