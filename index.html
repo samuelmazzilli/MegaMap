@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MegaMap - V26.02.21.17.01</title>
+    <title>MegaMap - V26.02.21.21.41</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -122,7 +122,7 @@
 <body>
 
     <div id="main-menu">
-        <h1 class="menu-title">MegaMap - V26.02.21.17.01</h1>
+        <h1 class="menu-title">MegaMap - V26.02.21.21.41</h1>
         <p class="menu-subtitle">A Mapping Program</p>
         <div class="menu-grid">
             <div class="menu-card">
@@ -338,6 +338,11 @@
                 this.currentFeatures = []; this.currentPathGenerator = null;
                 this.selectedFeatureIndex = null;
 
+                // NUOVO: Motore della Macchina del Tempo ⏱️
+                this.history = [];
+                this.historyIndex = -1;
+                this.isApplyingState = false;
+
                 this.initUI(); this.initZoom();
                 window.addEventListener('resize', () => this.resize());
             }
@@ -389,6 +394,11 @@
                     }
                 });
 
+                // NUOVO: Salva lo stato solo quando si smette di digitare la popolazione
+                document.getElementById('insp-pop').addEventListener('change', e => {
+                    if (this.selectedFeatureIndex !== null) this.pushState();
+                });
+
                 document.getElementById('btnSaveExit').addEventListener('click', () => {
                     try {
                         const slot = document.getElementById('editorSaveSlot').value.replace('slot_', '');
@@ -414,8 +424,68 @@
                 document.getElementById('exportJpg').addEventListener('click', () => this.exportMap('jpg'));
                 document.getElementById('exportPdf').addEventListener('click', () => this.exportMap('pdf'));
 
+                // NUOVO: Listener per gli Shortcut da Tastiera (Ctrl+Z / Ctrl+Y)
+                document.addEventListener('keydown', e => {
+                    if (document.getElementById('editor-ui').style.display !== 'none') {
+                        if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+                            e.preventDefault(); this.undo();
+                        } else if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+                            e.preventDefault(); this.redo();
+                        }
+                    }
+                });
+
                 this.initSearch();
             }
+
+            // --- NUOVE FUNZIONI CORE PER LO STATO (UNDO/REDO) ---
+            pushState() {
+                if (this.isApplyingState) return;
+                
+                // Se modifichiamo qualcosa dopo aver fatto Undo, distruggiamo le timeline future alternative (come in Ritorno al Futuro)
+                if (this.historyIndex < this.history.length - 1) {
+                    this.history = this.history.slice(0, this.historyIndex + 1);
+                }
+                
+                const currentState = JSON.stringify(this.generateState());
+                
+                // Niente stati duplicati consecutivi (risparmiamo memoria)
+                if (this.historyIndex >= 0 && this.history[this.historyIndex] === currentState) return;
+
+                this.history.push(currentState);
+                this.historyIndex++;
+                
+                // Manteniamo il buffer leggero limitandolo a 50 azioni
+                if (this.history.length > 50) {
+                    this.history.shift();
+                    this.historyIndex--;
+                }
+            }
+
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.isApplyingState = true;
+                    this.applyState(JSON.parse(this.history[this.historyIndex]));
+                    this.isApplyingState = false;
+                    AppManager.showToast("↩️ Annullato", false);
+                } else {
+                    AppManager.showToast("Più indietro di così c'è solo il Big Bang.", true);
+                }
+            }
+
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    this.isApplyingState = true;
+                    this.applyState(JSON.parse(this.history[this.historyIndex]));
+                    this.isApplyingState = false;
+                    AppManager.showToast("↪️ Ripristinato", false);
+                } else {
+                    AppManager.showToast("Nessun futuro disponibile.", true);
+                }
+            }
+            // ----------------------------------------------------
 
             async exportMap(format) {
                 AppManager.showToast("Generazione file in corso...", false);
@@ -427,7 +497,7 @@
 
                     if (format === 'png' || format === 'jpg') {
                         const link = document.createElement('a');
-                        link.download = `MapChart_Export_${new Date().getTime()}.${format}`;
+                        link.download = `MegaMap_Export_${new Date().getTime()}.${format}`;
                         link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`, 0.95);
                         link.click();
                         AppManager.showToast(`Mappa esportata in ${format.toUpperCase()}!`);
@@ -436,7 +506,7 @@
                         const imgData = canvas.toDataURL('image/jpeg', 0.95);
                         const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
                         pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
-                        pdf.save(`MapChart_Export_${new Date().getTime()}.pdf`);
+                        pdf.save(`MegaMap_Export_${new Date().getTime()}.pdf`);
                         AppManager.showToast("Mappa esportata in PDF!");
                     }
                 } catch (error) {
@@ -557,10 +627,9 @@
                 });
             }
 
-      colorAndZoomNation(nationName) {
+            colorAndZoomNation(nationName) {
                 let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
 
-                // 1. Rinomina Retroattiva (se stiamo usando un colore già noto)
                 if (this.currentColor.toLowerCase() !== defaultLandHex.toLowerCase()) {
                     this.currentFeatures.forEach(f => {
                         if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) {
@@ -569,7 +638,6 @@
                     });
                 }
 
-                // 2. Applica Colore (Lavoriamo sui dati puri, non sul DOM!)
                 this.currentFeatures.forEach((d, i) => {
                     if (d.properties.admin === nationName || d.properties.admin0 === nationName) {
                         if(this.currentColor.toLowerCase() === defaultLandHex.toLowerCase()) {
@@ -580,7 +648,6 @@
                             d.properties._factionName = targetName;
                         }
                         
-                        // FORZIAMO il colore nel DOM in tempo reale e senza esitazioni
                         if(this.currentMode === 'political') {
                             d3.select("#path-" + i).attr("fill", d.properties._factionColor);
                         }
@@ -590,21 +657,24 @@
                 this.generatePoliticalLegend(); 
                 if(this.currentMode === 'political') this.updateViewMode();
 
-                // 3. Zoom fluido sulle coordinate della nazione
                 const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
-                if (matchingFeatures.length === 0 || !this.currentPathGenerator) return;
-                
-                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                matchingFeatures.forEach(d => {
-                    const b = this.currentPathGenerator.bounds(d);
-                    if (b[0][0] < minX) minX = b[0][0]; if (b[0][1] < minY) minY = b[0][1];
-                    if (b[1][0] > maxX) maxX = b[1][0]; if (b[1][1] > maxY) maxY = b[1][1];
-                });
-                
-                const dx = maxX - minX, dy = maxY - minY, x = (minX + maxX) / 2, y = (minY + maxY) / 2;
-                const scale = Math.max(1, Math.min(40, 0.8 / Math.max(dx / this.width, dy / this.height)));
-                this.svg.transition().duration(800).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
+                if (matchingFeatures.length > 0 && this.currentPathGenerator) {
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    matchingFeatures.forEach(d => {
+                        const b = this.currentPathGenerator.bounds(d);
+                        if (b[0][0] < minX) minX = b[0][0]; if (b[0][1] < minY) minY = b[0][1];
+                        if (b[1][0] > maxX) maxX = b[1][0]; if (b[1][1] > maxY) maxY = b[1][1];
+                    });
+                    
+                    const dx = maxX - minX, dy = maxY - minY, x = (minX + maxX) / 2, y = (minY + maxY) / 2;
+                    const scale = Math.max(1, Math.min(40, 0.8 / Math.max(dx / this.width, dy / this.height)));
+                    this.svg.transition().duration(800).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
+                }
+
+                // NUOVO: Aggiorna lo stack di memoria dopo aver colorato
+                this.pushState();
             }
+
             selectAndInspect(d) {
                 const i = this.currentFeatures.indexOf(d); this.selectedFeatureIndex = i;
                 document.getElementById('inspector-panel').style.display = 'block';
@@ -637,6 +707,9 @@
                 this.generatePoliticalLegend();
                 this.updateViewMode();
                 if(this.currentMode === 'political') { d3.select("#path-" + i).attr("fill", this.currentColor); }
+
+                // NUOVO: Aggiorna lo stack di memoria dopo il click
+                this.pushState();
             }
 
             zoomToFeature(d) {
@@ -666,7 +739,13 @@
                     d.properties._factionName = saved && saved.f ? saved.f : undefined;
                     d.properties._population = saved && saved.p ? saved.p : 0;
                 });
-                this.generatePoliticalLegend(); this.updateViewMode();
+                this.generatePoliticalLegend(); 
+                this.updateViewMode();
+
+                // NUOVO: Assicura che i colori sulla mappa si aggiornino in tempo reale durante l'Undo
+                if (this.currentMode === 'political') {
+                    this.g.selectAll(".area").attr("fill", d => d.properties._factionColor || defaultLandHex);
+                }
             }
 
             initZoom() { 
@@ -784,6 +863,11 @@
                     this.currentFeatures = geoData.features; 
                     this.drawMap(geoData);
 
+                    // NUOVO: Inizializza la cronologia pulita una volta terminato il caricamento
+                    this.history = [];
+                    this.historyIndex = -1;
+                    this.pushState(); // Salva lo stato intatto come punto zero
+
                 } catch (e) { AppManager.showToast("Errore di caricamento mappa.", true); console.error(e);}
                 document.getElementById("loading").style.display = "none";
             }
@@ -832,7 +916,6 @@
                 this.updateViewMode();
             }
         }
-
         const editor = new GISMapEditor();
         AppManager.refreshSlots();
 
