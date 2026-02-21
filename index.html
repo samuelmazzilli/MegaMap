@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MegaMap - V26.20.02.20.12 (Dynamic Renaming Edition)</title>
+    <title>MegaMap - V26.02.21.13.19</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -122,8 +122,8 @@
 <body>
 
     <div id="main-menu">
-        <h1 class="menu-title">MegaMap - V26.02.21.12.32</h1>
-        <p class="menu-subtitle">Ambiente di Raggruppamento Geografico</p>
+        <h1 class="menu-title">MegaMap - V26.02.21.13.19</h1>
+        <p class="menu-subtitle">Programma Di Mapping</p>
         <div class="menu-grid">
             <div class="menu-card">
                 <h2>Nuovo Progetto</h2>
@@ -314,9 +314,15 @@
                     document.getElementById('menuSaveSlot').options[i-1].text = text;
                 }
             },
-            goToEditor: async (mapType, stateData = null) => {
-                document.getElementById('main-menu').style.display = 'none'; document.getElementById('editor-ui').style.display = 'block';
+            // FIX CRUCIALE: Aggiunto targetSlot per sincronizzare la Dropdown all'interno dell'editor!
+            goToEditor: async (mapType, stateData = null, targetSlot = 'slot_1') => {
+                document.getElementById('main-menu').style.display = 'none'; 
+                document.getElementById('editor-ui').style.display = 'block';
                 document.getElementById('currentMapDisplay').innerText = AppManager.mapSources[mapType].name;
+                
+                // Mantiene il sistema di slot coerente
+                document.getElementById('editorSaveSlot').value = targetSlot;
+
                 editor.resize(); await editor.loadMap(mapType);
                 if (stateData) editor.applyState(stateData);
             },
@@ -352,7 +358,6 @@
                     this.currentColor = e.target.value; 
                     document.getElementById('colorHex').textContent = this.currentColor.toUpperCase(); 
                     
-                    // Comodità: Se scegli un colore noto, ti ricorda come si chiamava. Ma puoi cancellarlo.
                     const existingName = this.getFactionNameForColor(this.currentColor);
                     if (existingName) {
                         document.getElementById('factionNameInput').value = existingName;
@@ -555,7 +560,6 @@
             colorAndZoomNation(nationName) {
                 let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
 
-                // RINOMINA RETROATTIVA: Se l'utente ha scritto un nome diverso nella casella per un colore esistente, lo applichiamo a TUTTO il gruppo
                 if (this.currentColor.toLowerCase() !== defaultLandHex.toLowerCase()) {
                     this.currentFeatures.forEach(f => {
                         if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) {
@@ -609,7 +613,6 @@
                 } else {
                     let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
                     
-                    // RINOMINA RETROATTIVA: Aggiorna tutte le nazioni che condividono questo colore
                     this.currentFeatures.forEach(f => {
                         if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) {
                             f.properties._factionName = targetName;
@@ -798,7 +801,6 @@
                         let t = `<b style="display:block; margin-bottom:2px;">${areaName}</b>`;
                         if (adminName) t += `<span style="color:var(--accent); font-size:10px; text-transform:uppercase;">${adminName}</span>`;
                         
-                        // ORA È UN PULITO INDICATORE NEUTRO INVECE DELLE SPADE
                         if (d.properties._factionName) {
                             t += `<div style="margin-top:4px; font-size:11px; color:#facc15; font-weight:bold;">● ${d.properties._factionName}</div>`;
                         }
@@ -823,14 +825,24 @@
         const editor = new GISMapEditor();
         AppManager.refreshSlots();
 
-        document.getElementById('btnStartNew').addEventListener('click', () => AppManager.goToEditor(document.getElementById('startMapSelector').value));
+        // FIX: Propaghiamo la selezione "slot_1" per i nuovi progetti
+        document.getElementById('btnStartNew').addEventListener('click', () => {
+            AppManager.goToEditor(document.getElementById('startMapSelector').value, null, 'slot_1');
+        });
         
+        // FIX: Leggiamo l'ID esatto dal menu e lo passiamo a goToEditor per sincronizzare la tendina dell'Editor!
         document.getElementById('btnLoadLocal').addEventListener('click', () => {
-            const slot = document.getElementById('menuSaveSlot').value.replace('slot_', '');
-            const data = localStorage.getItem(`mapchart_pro_final_v3_${slot}`);
-            if (data) AppManager.goToEditor(JSON.parse(data).mapType, JSON.parse(data)); else AppManager.showToast("Slot vuoto", true);
+            const slotValue = document.getElementById('menuSaveSlot').value; // es: "slot_2"
+            const slotId = slotValue.replace('slot_', '');
+            const data = localStorage.getItem(`mapchart_pro_final_v3_${slotId}`);
+            if (data) {
+                AppManager.goToEditor(JSON.parse(data).mapType, JSON.parse(data), slotValue); 
+            } else {
+                AppManager.showToast("Slot vuoto", true);
+            }
         });
 
+        // FIX: Anche nei progetti importati da JSON mettiamo il blocco di default su slot_1
         document.getElementById('btnImportProject').addEventListener('click', () => {
             const fileInput = document.getElementById('importProjectFile');
             if (!fileInput.files.length) { AppManager.showToast("Seleziona un file prima!", true); return; }
@@ -841,7 +853,7 @@
                 try {
                     const stateData = JSON.parse(e.target.result);
                     if (!stateData.mapType) throw new Error("Formato progetto non valido");
-                    AppManager.goToEditor(stateData.mapType, stateData);
+                    AppManager.goToEditor(stateData.mapType, stateData, 'slot_1');
                 } catch (err) {
                     AppManager.showToast("File JSON corrotto o invalido.", true);
                 }
