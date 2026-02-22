@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MegaMap - V26.02.22.14.36</title>
+    <title>MegaMap - V26.02.22.14.53</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -50,6 +50,10 @@
         .btn-primary:hover { background: var(--btn-hover); }
         .btn-success { background: var(--success); }
         .btn-success:hover { background: #15803d; }
+        
+        /* Glow effects for 3D Mode */
+        .btn-3d { background: linear-gradient(45deg, #6366f1, #a855f7); color: white; border: none; font-weight: 800; letter-spacing: 1px; }
+        .btn-3d:hover { background: linear-gradient(45deg, #4f46e5, #9333ea); filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5)); }
 
         .file-upload-wrapper { position: relative; width: 100%; height: 42px; display: flex; align-items: center; background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 4px; overflow: hidden; }
         .file-upload-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
@@ -101,11 +105,11 @@
         #choropleth-bar { height: 10px; background: #fff; border-radius: 2px; margin-top: 10px; border: 1px solid var(--border-light);}
         #choro-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; font-family: monospace;}
 
-        #map-container { position: absolute; top: 0; left: 350px; width: calc(100vw - 350px); height: 100vh; cursor: grab; background: var(--bg-ocean); }
+        #map-container { position: absolute; top: 0; left: 350px; width: calc(100vw - 350px); height: 100vh; cursor: grab; background: var(--bg-ocean); overflow: hidden; }
         #map-container:active { cursor: grabbing; }
-        svg { width: 100%; height: 100%; }
+        svg { width: 100%; height: 100%; display: block; }
         
-        .area { stroke: #0f172a; stroke-width: 0.4px; stroke-linejoin: round; stroke-linecap: round; shape-rendering: geometricPrecision; vector-effect: non-scaling-stroke; transition: fill 0.2s ease, stroke 0.1s; cursor: pointer; }
+        .area { stroke: #0f172a; stroke-width: 0.4px; stroke-linejoin: round; stroke-linecap: round; shape-rendering: geometricPrecision; vector-effect: non-scaling-stroke; transition: fill 0.2s ease; cursor: pointer; }
         .area:hover { stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
         
         .river { fill: none; stroke: var(--water-color); stroke-width: 0.6px; vector-effect: non-scaling-stroke; pointer-events: none; opacity: 0.6; }
@@ -141,7 +145,7 @@
 <body>
 
     <div id="main-menu">
-        <h1 class="menu-title">MegaMap - V26.02.22.14.36</h1>
+        <h1 class="menu-title">MegaMap - V26.02.22.14.53</h1>
         <p class="menu-subtitle">A Mapping Program</p>
         <div class="menu-grid">
             <div class="menu-card">
@@ -199,13 +203,13 @@
     <div id="editor-ui">
         <div id="sidebar">
             <div class="header">
-                <h1>MegaMap PRO</h1>
+                <h1>MegaMap 3D</h1>
                 <p id="currentMapDisplay">Mappa Attiva</p>
             </div>
             <div class="tools">
                 
                 <div class="control-group">
-                    <label>Vista & Layer Cartografici</label>
+                    <label>Vista & Motore Rendering</label>
                     <div class="mode-toggle">
                         <button class="mode-btn active" data-mode="political">Politica</button>
                         <button class="mode-btn" data-mode="population">Pop</button>
@@ -216,6 +220,10 @@
                         <button class="btn" id="toggleWaterBtn" style="flex:1; background: var(--panel-bg); color: var(--water-color); font-size: 0.75rem;">💧 Acqua: ON</button>
                         <button class="btn" id="toggleLabelsBtn" style="flex:1; background: var(--panel-bg); color: #fbbf24; font-size: 0.75rem;">🔤 Testi: OFF</button>
                     </div>
+                    
+                    <button class="btn btn-3d" id="toggle3DBtn" style="width: 100%; margin-top: 5px; font-size: 0.8rem;">
+                        🌍 ATTIVA GLOBO 3D
+                    </button>
 
                     <div id="choropleth-legend-container">
                         <div id="choropleth-bar"></div>
@@ -351,6 +359,23 @@
                 this.container = d3.select("#map-container"); 
                 this.svg = d3.select("#world-map");
                 this.tooltip = d3.select("#tooltip"); 
+                
+                // INIEZIONE ATMOSFERA E ILLUMINAZIONE (SVG DEFS)
+                const defs = this.svg.append("defs");
+                const radialGradient = defs.append("radialGradient")
+                    .attr("id", "globe-glow")
+                    .attr("cx", "50%").attr("cy", "50%").attr("r", "50%");
+                radialGradient.append("stop").attr("offset", "75%").attr("stop-color", "#1e293b"); // Oceano centrale
+                radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#020617"); // Bordo scuro spaziale
+                
+                // Il globo base (Oceano e atmosfera)
+                this.oceanSphere = this.svg.append("circle")
+                    .attr("id", "ocean-sphere")
+                    .attr("fill", "url(#globe-glow)")
+                    .style("display", "none")
+                    .style("pointer-events", "all");
+
+                // Gruppi di layer
                 this.g = this.svg.append("g");
                 
                 this.currentColor = "#ef4444"; this.currentMode = "political";
@@ -359,11 +384,17 @@
                 
                 this.showWater = true;
                 this.showLabels = false;
+                
+                // STATO 3D
+                this.is3D = false;
+                this.proj2D = null;
+                this.proj3D = d3.geoOrthographic(); 
+                this.rotation = [0, 0, 0];
 
                 this.history = []; this.historyIndex = -1; this.isApplyingState = false;
 
-                this.initUI(); this.initZoom();
-                window.addEventListener('resize', () => this.resize());
+                this.initUI(); this.setupInteractions();
+                window.addEventListener('resize', () => { this.resize(); this.updateProjection(); });
             }
 
             getFactionNameForColor(hexColor) {
@@ -435,6 +466,18 @@
                     this.renderLabels();
                 });
 
+                // TASTO MAGICO 3D
+                document.getElementById('toggle3DBtn').addEventListener('click', e => {
+                    if (this.currentMapType === 'usa') {
+                        AppManager.showToast("Il 3D non è supportato sulla mappa USA isolata.", true);
+                        return;
+                    }
+                    this.is3D = !this.is3D;
+                    e.target.innerHTML = this.is3D ? "🗺️ RITORNA A 2D" : "🌍 ATTIVA GLOBO 3D";
+                    e.target.style.background = this.is3D ? "linear-gradient(45deg, #10b981, #3b82f6)" : "linear-gradient(45deg, #6366f1, #a855f7)";
+                    this.updateProjection();
+                });
+
                 document.getElementById('insp-pop').addEventListener('input', e => {
                     if (this.selectedFeatureIndex !== null) {
                         const d = this.currentFeatures[this.selectedFeatureIndex];
@@ -446,10 +489,7 @@
                 });
 
                 document.getElementById('insp-pop').addEventListener('change', e => {
-                    if (this.selectedFeatureIndex !== null) {
-                        this.pushState();
-                        this.renderLabels(); 
-                    }
+                    if (this.selectedFeatureIndex !== null) { this.pushState(); this.renderLabels(); }
                 });
 
                 document.getElementById('btnSaveExit').addEventListener('click', () => {
@@ -485,7 +525,90 @@
                 this.initSearch();
             }
 
-            // --- REINSERITO: LO SMART DECLUTTERING (Si attiva durante lo zoom!) ---
+            // GESTIONE DEL RENDERING 2D vs 3D
+            updateProjection() {
+                if (this.is3D) {
+                    // Imposta il globo ortografico
+                    this.oceanSphere.style("display", "block");
+                    this.proj3D.translate([this.width / 2, this.height / 2]).scale(Math.min(this.width, this.height) / 2.2).rotate(this.rotation);
+                    this.currentPathGenerator = d3.geoPath().projection(this.proj3D);
+                    // Rimuove eventuali trasformazioni del gruppo 2D
+                    this.g.attr("transform", null);
+                    
+                    // Disegna l'Atmosfera (Oceano)
+                    this.oceanSphere
+                        .attr("cx", this.width / 2)
+                        .attr("cy", this.height / 2)
+                        .attr("r", this.proj3D.scale());
+                } else {
+                    // Ripristina il 2D
+                    this.oceanSphere.style("display", "none");
+                    this.currentPathGenerator = d3.geoPath().projection(this.proj2D);
+                }
+
+                // Ridsegna tutti i percorsi vettoriali
+                if(this.gBase) this.gBase.selectAll("path").attr("d", this.currentPathGenerator);
+                if(this.gRivers) this.gRivers.selectAll("path").attr("d", this.currentPathGenerator);
+                if(this.gLakes) this.gLakes.selectAll("path").attr("d", this.currentPathGenerator);
+                
+                this.renderLabels();
+            }
+
+            setupInteractions() {
+                // IL MOTORE DI INTERAZIONE DOPPIO (Zoom per 2D, Drag/Rotate per 3D)
+                this.zoom2D = d3.zoom().scaleExtent([0.5, 250]).on("zoom", e => {
+                    if (this.is3D) {
+                        // In 3D lo zoom cambia la scala della sfera, non trasla il gruppo!
+                        const scale = (Math.min(this.width, this.height) / 2.2) * e.transform.k;
+                        this.proj3D.scale(scale);
+                        this.oceanSphere.attr("r", scale);
+                        this.updatePathsFast();
+                    } else {
+                        // In 2D muoviamo classicamente il gruppo SVG
+                        this.g.attr("transform", e.transform);
+                        this.renderLabels();
+                    }
+                });
+
+                // Il trascinamento per ruotare il pianeta (Inerzia manuale implementata nei drag)
+                this.drag3D = d3.drag()
+                    .on("start", e => {
+                        if (!this.is3D) return;
+                        this.v0 = [e.x, e.y];
+                        this.r0 = this.proj3D.rotate();
+                    })
+                    .on("drag", e => {
+                        if (!this.is3D) return;
+                        const v1 = [e.x, e.y];
+                        const k = 75 / this.proj3D.scale(); // Sensibilità alla rotazione basata sullo zoom
+                        this.rotation = [
+                            this.r0[0] + (v1[0] - this.v0[0]) * k,
+                            this.r0[1] - (v1[1] - this.v0[1]) * k,
+                            this.r0[2]
+                        ];
+                        // Limita il beccheggio (Su/Giù) per evitare rotazioni scombussolate
+                        this.rotation[1] = Math.max(-90, Math.min(90, this.rotation[1]));
+                        
+                        this.proj3D.rotate(this.rotation);
+                        this.updatePathsFast();
+                    });
+
+                // Applichiamo i listener globali al container SVG
+                this.svg.call(this.zoom2D);
+                this.svg.call(this.drag3D);
+                // Permette di trascinare il pianeta anche cliccando sull'oceano
+                this.oceanSphere.call(this.drag3D);
+            }
+
+            // Metodo rapido per aggiornare i percorsi durante l'animazione 3D senza ricalcolare tutto
+            updatePathsFast() {
+                if(this.gBase) this.gBase.selectAll("path").attr("d", this.currentPathGenerator);
+                if(this.gRivers && this.showWater) this.gRivers.selectAll("path").attr("d", this.currentPathGenerator);
+                if(this.gLakes && this.showWater) this.gLakes.selectAll("path").attr("d", this.currentPathGenerator);
+                this.renderLabels();
+            }
+
+            // SMART LABELS & 3D CULLING
             renderLabels() {
                 if (!this.gLabels) return;
                 this.gLabels.selectAll("*").remove(); 
@@ -508,18 +631,35 @@
                     .attr("transform", d => {
                         const centroid = this.getBestCentroid(d);
                         if (!centroid || isNaN(centroid[0])) return "translate(-9999,-9999)";
-                        return `translate(${centroid[0]}, ${centroid[1]})`;
+                        
+                        // L'ECLISSI TIPOGRAFICA (Culling 3D)
+                        // In modalità 3D, se una nazione è "dietro" al globo, il suo centroide proiettato andrebbe nascosto.
+                        if (this.is3D) {
+                            // Creiamo un path fittizio di un punto. Se la proiezione Ortografica lo restituisce null, è dietro.
+                            const pointFeature = { type: "Point", coordinates: centroid };
+                            if (!this.currentPathGenerator(pointFeature)) return "translate(-9999,-9999)"; 
+                        }
+
+                        // Proiezione finale delle coordinate
+                        const projected = this.currentPathGenerator.projection()(centroid);
+                        if (!projected) return "translate(-9999,-9999)";
+                        
+                        return `translate(${projected[0]}, ${projected[1]})`;
                     })
-                    // RIPRISTINATO: L'algoritmo che nasconde le nazioni piccole per evitare il minestrone visivo
                     .style("display", d => {
+                        // In 3D, lo zoom cambia il raggio della sfera, non il 'k' del transformer standard in modo utile,
+                        // quindi in 3D disabilitiamo in parte il decluttering estremo per goderci i nomi sul globo,
+                        // oppure usiamo scale() per calcolare lo zoom fittizio.
+                        const effectiveZoom = this.is3D ? (this.proj3D.scale() / (Math.min(this.width, this.height)/2.2)) : currentZoomScale;
+                        
                         const area = d.properties._area_km2 || 0;
-                        if (currentZoomScale < 1.5) {
+                        if (effectiveZoom < 1.5) {
                             if (area < 1500000) return "none";
-                        } else if (currentZoomScale < 3.0) {
+                        } else if (effectiveZoom < 3.0) {
                             if (area < 300000) return "none";
-                        } else if (currentZoomScale < 6.0) {
+                        } else if (effectiveZoom < 6.0) {
                             if (area < 50000) return "none";
-                        } else if (currentZoomScale < 10.0) {
+                        } else if (effectiveZoom < 10.0) {
                             if (area < 5000) return "none";
                         }
                         return "block";
@@ -534,8 +674,14 @@
                             return (d.properties._population / d.properties._area_km2).toFixed(1);
                         }
                     })
-                    .attr("font-size", `${7 / currentZoomScale}px`)
-                    .attr("stroke-width", `${1.5 / currentZoomScale}px`);
+                    .attr("font-size", () => {
+                        const effectiveZoom = this.is3D ? (this.proj3D.scale() / (Math.min(this.width, this.height)/2.2)) : currentZoomScale;
+                        return `${7 / effectiveZoom}px`;
+                    })
+                    .attr("stroke-width", () => {
+                        const effectiveZoom = this.is3D ? (this.proj3D.scale() / (Math.min(this.width, this.height)/2.2)) : currentZoomScale;
+                        return `${1.5 / effectiveZoom}px`;
+                    });
             }
 
             pushState() {
@@ -549,30 +695,27 @@
             undo() { if (this.historyIndex > 0) { this.historyIndex--; this.isApplyingState = true; this.applyState(JSON.parse(this.history[this.historyIndex])); this.isApplyingState = false; AppManager.showToast("↩️ Annullato", false); } else { AppManager.showToast("Niente da annullare.", true); } }
             redo() { if (this.historyIndex < this.history.length - 1) { this.historyIndex++; this.isApplyingState = true; this.applyState(JSON.parse(this.history[this.historyIndex])); this.isApplyingState = false; AppManager.showToast("↪️ Ripristinato", false); } }
 
-            // L'EXPORT SPEGNE I TESTI, FA LA FOTO, E POI LI RIACCENDE (Senza alterare lo zoom o i file)
             async exportMap(format) {
                 AppManager.showToast("Preparazione Export in corso...", false);
                 const mapContainer = document.getElementById('map-container');
                 
                 const currentTransform = d3.zoomTransform(this.svg.node());
+                const current3DScale = this.proj3D.scale();
                 const previousLabelsState = this.showLabels; 
                 
-                // Disattiva forzatamente i testi prima dell'esportazione
-                this.showLabels = false;
-                this.renderLabels(); 
+                this.showLabels = false; this.renderLabels(); this.tooltip.style("opacity", 0);
                 
-                this.tooltip.style("opacity", 0);
-                this.svg.call(this.zoom.transform, d3.zoomIdentity);
+                if (!this.is3D) { this.svg.call(this.zoom2D.transform, d3.zoomIdentity); }
                 
                 await new Promise(resolve => setTimeout(resolve, 50));
 
                 try {
                     const canvas = await html2canvas(mapContainer, { backgroundColor: "#0f172a", scale: 2, logging: false });
                     
-                    // Riporta lo zoom dove era e riaccende le etichette se erano attive
-                    this.svg.call(this.zoom.transform, currentTransform);
-                    this.showLabels = previousLabelsState;
-                    this.renderLabels();
+                    if (!this.is3D) { this.svg.call(this.zoom2D.transform, currentTransform); }
+                    else { this.proj3D.scale(current3DScale); this.updatePathsFast(); }
+                    
+                    this.showLabels = previousLabelsState; this.renderLabels();
                     
                     if (format === 'png' || format === 'jpg') {
                         const link = document.createElement('a');
@@ -589,9 +732,6 @@
                         AppManager.showToast("Mappa esportata in PDF!");
                     }
                 } catch (error) { 
-                    this.svg.call(this.zoom.transform, currentTransform); 
-                    this.showLabels = previousLabelsState;
-                    this.renderLabels();
                     AppManager.showToast("Errore durante l'esportazione.", true); 
                 }
             }
@@ -699,17 +839,35 @@
                 
                 this.generatePoliticalLegend(); if(this.currentMode === 'political') this.updateViewMode();
 
-                const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
-                if (matchingFeatures.length > 0 && this.currentPathGenerator) {
-                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                    matchingFeatures.forEach(d => {
-                        const b = this.currentPathGenerator.bounds(d);
-                        if (b[0][0] < minX) minX = b[0][0]; if (b[0][1] < minY) minY = b[0][1];
-                        if (b[1][0] > maxX) maxX = b[1][0]; if (b[1][1] > maxY) maxY = b[1][1];
-                    });
-                    const dx = maxX - minX, dy = maxY - minY, x = (minX + maxX) / 2, y = (minY + maxY) / 2;
-                    const scale = Math.max(1, Math.min(40, 0.8 / Math.max(dx / this.width, dy / this.height)));
-                    this.svg.transition().duration(800).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
+                if (!this.is3D) {
+                    const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
+                    if (matchingFeatures.length > 0 && this.currentPathGenerator) {
+                        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                        matchingFeatures.forEach(d => {
+                            const b = this.currentPathGenerator.bounds(d);
+                            if (b[0][0] < minX) minX = b[0][0]; if (b[0][1] < minY) minY = b[0][1];
+                            if (b[1][0] > maxX) maxX = b[1][0]; if (b[1][1] > maxY) maxY = b[1][1];
+                        });
+                        const dx = maxX - minX, dy = maxY - minY, x = (minX + maxX) / 2, y = (minY + maxY) / 2;
+                        const scale = Math.max(1, Math.min(40, 0.8 / Math.max(dx / this.width, dy / this.height)));
+                        this.svg.transition().duration(800).call(this.zoom2D.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
+                    }
+                } else {
+                    // Se in 3D, ruota il globo verso la nazione cercata!
+                    const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
+                    if (matchingFeatures.length > 0) {
+                        const targetD = matchingFeatures[0];
+                        const centroid = this.getBestCentroid(targetD);
+                        
+                        d3.transition().duration(800).tween("rotate", () => {
+                            const r = d3.interpolate(this.proj3D.rotate(), [-centroid[0], -centroid[1]]);
+                            return t => {
+                                this.proj3D.rotate(r(t));
+                                this.rotation = this.proj3D.rotate();
+                                this.updatePathsFast();
+                            };
+                        });
+                    }
                 }
                 
                 this.renderLabels();
@@ -742,9 +900,21 @@
             }
 
             zoomToFeature(d) {
-                const b = this.currentPathGenerator.bounds(d), dx = b[1][0] - b[0][0], dy = b[1][1] - b[0][1], x = (b[0][0] + b[1][0]) / 2, y = (b[0][1] + b[1][1]) / 2;
-                const scale = Math.max(1, Math.min(60, 0.5 / Math.max(dx / this.width, dy / this.height)));
-                this.svg.transition().duration(800).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
+                if (!this.is3D) {
+                    const b = this.currentPathGenerator.bounds(d), dx = b[1][0] - b[0][0], dy = b[1][1] - b[0][1], x = (b[0][0] + b[1][0]) / 2, y = (b[0][1] + b[1][1]) / 2;
+                    const scale = Math.max(1, Math.min(60, 0.5 / Math.max(dx / this.width, dy / this.height)));
+                    this.svg.transition().duration(800).call(this.zoom2D.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
+                } else {
+                    const centroid = this.getBestCentroid(d);
+                    d3.transition().duration(800).tween("rotate", () => {
+                        const r = d3.interpolate(this.proj3D.rotate(), [-centroid[0], -centroid[1]]);
+                        return t => {
+                            this.proj3D.rotate(r(t));
+                            this.rotation = this.proj3D.rotate();
+                            this.updatePathsFast();
+                        };
+                    });
+                }
             }
 
             generateState() {
@@ -769,17 +939,7 @@
                 this.renderLabels(); 
             }
 
-            initZoom() { 
-                this.zoom = d3.zoom().scaleExtent([0.5, 250]).on("zoom", e => {
-                    this.gBase.attr("transform", e.transform);
-                    this.gRivers.attr("transform", e.transform);
-                    this.gLakes.attr("transform", e.transform);
-                    this.gLabels.attr("transform", e.transform); 
-
-                    this.renderLabels();
-                }); 
-                this.svg.call(this.zoom); 
-            }
+            initZoom() {} // Il contenuto di initZoom è stato spostato nel nuovo setupInteractions()
             
             resize() { if(document.getElementById('editor-ui').style.display !== 'none') { this.width = this.container.node().getBoundingClientRect().width; this.height = this.container.node().getBoundingClientRect().height; } }
 
@@ -787,6 +947,18 @@
                 const config = AppManager.mapSources[mapType]; this.currentMapType = mapType; this.g.selectAll("*").remove(); 
                 document.getElementById("loading").style.display = "block";
                 
+                // Seleziona la 2D Base Projection in base alla mappa
+                if (mapType === 'usa') {
+                    this.proj2D = d3.geoAlbersUsa().fitSize([this.width - 20, this.height - 20], {type: "Sphere"});
+                    document.getElementById('toggle3DBtn').disabled = true;
+                    document.getElementById('toggle3DBtn').style.opacity = "0.3";
+                    if(this.is3D) { this.is3D = false; document.getElementById('toggle3DBtn').innerHTML = "🌍 ATTIVA GLOBO 3D"; }
+                } else {
+                    this.proj2D = d3.geoMercator();
+                    document.getElementById('toggle3DBtn').disabled = false;
+                    document.getElementById('toggle3DBtn').style.opacity = "1";
+                }
+
                 document.getElementById('inspector-panel').style.display = 'none'; document.getElementById('political-legend-list').innerHTML = ''; 
                 document.getElementById('political-legend-count').textContent = "0"; document.getElementById('searchInput').value = ''; 
                 document.getElementById('searchResults').style.display = 'none'; this.selectedFeatureIndex = null;
@@ -833,6 +1005,7 @@
                         } else { d.properties._population = 0; d.properties._factionColor = defaultLandHex; }
                     });
                     
+                    if (mapType !== 'usa') this.proj2D.fitSize([this.width - 20, this.height - 20], geoData);
                     this.currentFeatures = geoData.features; this.drawMap(geoData);
                     this.history = []; this.historyIndex = -1; this.pushState();
 
@@ -841,14 +1014,8 @@
             }
 
             drawMap(geoData) {
-                let proj;
-                if (this.currentMapType === 'usa') {
-                    const validStates = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","District of Columbia","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
-                    geoData.features = geoData.features.filter(d => validStates.includes(d.properties.name || d.properties.NAME));
-                    proj = d3.geoAlbersUsa().fitSize([this.width - 20, this.height - 20], geoData);
-                } else { proj = d3.geoMercator().fitSize([this.width - 20, this.height - 20], geoData); }
-
-                this.currentPathGenerator = d3.geoPath().projection(proj);
+                // Imposta la proiezione base in base allo switch
+                this.updateProjection();
 
                 this.g.selectAll("*").remove(); 
                 this.gBase = this.g.append("g").attr("class", "layer-base");
