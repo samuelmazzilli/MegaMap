@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MegaMap - V26.02.21.21.41</title>
+    <title>MegaMap - V26.02.22.14.36</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,9 +11,9 @@
     <meta name="description" content="Il motore GIS definitivo per creare mappe coropletiche e politiche.">
     <style>
         :root {
-            --bg-ocean: #1e293b; 
-            --panel-bg: #0f172a; 
-            --card-bg: #1e293b;
+            --bg-ocean: #0f172a; 
+            --panel-bg: #1e293b; 
+            --card-bg: #0f172a;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --accent: #2563eb; 
@@ -21,6 +21,7 @@
             --danger: #dc2626;
             --border-light: #334155;
             --btn-hover: #3b82f6;
+            --water-color: #38bdf8;
         }
         
         body { margin: 0; overflow: hidden; background-color: var(--bg-ocean); font-family: 'Inter', 'Segoe UI', sans-serif; color: var(--text-main); user-select: none; }
@@ -30,18 +31,18 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         /* --- MAIN MENU --- */
-        #main-menu { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-ocean); z-index: 50; }
+        #main-menu { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #020617; z-index: 50; }
         .menu-title { font-size: 3rem; margin: 0 0 10px 0; font-weight: 800; color: #fff; letter-spacing: -1px; }
         .menu-subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; }
         .menu-grid { display: flex; gap: 20px; max-width: 1000px; width: 95%; align-items: stretch; }
-        .menu-card { background: var(--card-bg); border: 1px solid var(--border-light); padding: 30px; border-radius: 8px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .menu-card { background: var(--panel-bg); border: 1px solid var(--border-light); padding: 30px; border-radius: 8px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
         .menu-card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
         
-        select, .custom-input { width: 100%; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--border-light); font-size: 0.9rem; outline: none; background: var(--panel-bg); color: var(--text-main); box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
+        select, .custom-input { width: 100%; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--border-light); font-size: 0.9rem; outline: none; background: var(--card-bg); color: var(--text-main); box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
         select { cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 35px; }
         select:focus, .custom-input:focus { border-color: var(--accent); }
-        optgroup { background: var(--card-bg); color: var(--accent); font-weight: bold; }
-        option { background: var(--panel-bg); color: #fff; font-weight: normal; }
+        optgroup { background: var(--panel-bg); color: var(--accent); font-weight: bold; }
+        option { background: var(--card-bg); color: #fff; font-weight: normal; }
 
         .btn { background: var(--border-light); border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: 600; color: #fff; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
         .btn:hover { background: var(--text-muted); }
@@ -50,17 +51,17 @@
         .btn-success { background: var(--success); }
         .btn-success:hover { background: #15803d; }
 
-        .file-upload-wrapper { position: relative; width: 100%; height: 42px; display: flex; align-items: center; background: var(--panel-bg); border: 1px solid var(--border-light); border-radius: 4px; overflow: hidden; }
+        .file-upload-wrapper { position: relative; width: 100%; height: 42px; display: flex; align-items: center; background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 4px; overflow: hidden; }
         .file-upload-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
-        .file-upload-btn { background: var(--border-light); padding: 0 15px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #fff; z-index: 1; border-right: 1px solid var(--panel-bg); }
+        .file-upload-btn { background: var(--border-light); padding: 0 15px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #fff; z-index: 1; border-right: 1px solid var(--card-bg); }
         .file-name-display { padding-left: 10px; font-size: 0.8rem; color: var(--text-muted); z-index: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: calc(100% - 110px); }
 
         /* --- EDITOR UI --- */
         #editor-ui { display: none; width: 100vw; height: 100vh; }
-        #sidebar { position: absolute; top: 0; left: 0; width: 350px; height: 100vh; background: var(--panel-bg); border-right: 1px solid var(--border-light); z-index: 10; display: flex; flex-direction: column; }
-        .header { padding: 15px 20px; background: var(--card-bg); text-align: center; border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
-        .header h1 { margin: 0; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .header p { margin: 4px 0 0 0; font-size: 0.75rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        #sidebar { position: absolute; top: 0; left: 0; width: 350px; height: 100vh; background: var(--panel-bg); border-right: 1px solid var(--border-light); z-index: 10; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
+        .header { padding: 15px 20px; background: #020617; text-align: center; border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+        .header h1 { margin: 0; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); }
+        .header p { margin: 4px 0 0 0; font-size: 0.75rem; color: #fff; font-weight: bold; text-transform: uppercase; }
         
         .tools { padding: 15px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         .control-group { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 4px; padding: 15px; flex-shrink: 0; }
@@ -77,7 +78,7 @@
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-light); border-radius: 2px; }
         #colorHex { font-family: 'Fira Code', monospace; font-size: 0.85rem; font-weight: bold; }
         
-        #searchResults { position: absolute; width: calc(100% - 30px); max-height: 200px; overflow-y: auto; background: var(--panel-bg); border: 1px solid var(--accent); border-radius: 4px; z-index: 20; display: none; margin-top: 5px; }
+        #searchResults { position: absolute; width: calc(100% - 30px); max-height: 200px; overflow-y: auto; background: var(--panel-bg); border: 1px solid var(--accent); border-radius: 4px; z-index: 20; display: none; margin-top: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .search-category { background: var(--card-bg); font-size: 0.7rem; font-weight: bold; color: var(--accent); padding: 6px 12px; text-transform: uppercase; }
         .search-item { padding: 8px 12px; border-bottom: 1px solid var(--border-light); cursor: pointer; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
         .search-item:hover { background: var(--border-light); color: #fff; }
@@ -88,7 +89,7 @@
         .insp-stat { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-light); padding-bottom: 4px;}
         .insp-stat span { color: #fff; font-family: monospace; font-size: 0.85rem;}
 
-        #political-legend-container { display: flex; flex-grow: 1; flex-shrink: 0; min-height: 200px; overflow: hidden; flex-direction: column; }
+        #political-legend-container { display: flex; flex-grow: 1; flex-shrink: 0; min-height: 150px; overflow: hidden; flex-direction: column; }
         .legend-title { font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); text-transform: uppercase;}
         .legend-count { background: var(--border-light); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
         #political-legend-list { overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 6px;}
@@ -103,12 +104,30 @@
         #map-container { position: absolute; top: 0; left: 350px; width: calc(100vw - 350px); height: 100vh; cursor: grab; background: var(--bg-ocean); }
         #map-container:active { cursor: grabbing; }
         svg { width: 100%; height: 100%; }
-        .area { stroke: var(--panel-bg); stroke-width: 0.5px; stroke-linejoin: round; stroke-linecap: round; shape-rendering: geometricPrecision; vector-effect: non-scaling-stroke; transition: fill 0.2s ease, stroke 0.1s; cursor: pointer; }
-        .area:hover { stroke: #fff; stroke-width: 1px; }
         
-        #tooltip { position: absolute; background: var(--panel-bg); border: 1px solid var(--border-light); color: white; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        #loading { position: absolute; top: 50%; left: calc(50% + 175px); transform: translate(-50%, -50%); background: var(--panel-bg); border: 1px solid var(--accent); color: white; padding: 20px 30px; border-radius: 4px; font-size: 1.1rem; font-weight: bold; display: none; pointer-events: none; z-index: 100; text-align: center; }
-        #toast { position: absolute; bottom: 30px; left: calc(50% + 175px); transform: translateX(-50%); background: var(--success); color: white; padding: 10px 20px; border-radius: 4px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; font-size: 0.85rem;}
+        .area { stroke: #0f172a; stroke-width: 0.4px; stroke-linejoin: round; stroke-linecap: round; shape-rendering: geometricPrecision; vector-effect: non-scaling-stroke; transition: fill 0.2s ease, stroke 0.1s; cursor: pointer; }
+        .area:hover { stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+        
+        .river { fill: none; stroke: var(--water-color); stroke-width: 0.6px; vector-effect: non-scaling-stroke; pointer-events: none; opacity: 0.6; }
+        .lake { fill: var(--water-color); stroke: none; pointer-events: none; opacity: 0.75; }
+        
+        .map-label {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            fill: #ffffff;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+            paint-order: stroke; 
+            stroke: #0f172a;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: opacity 0.2s, display 0.2s;
+        }
+
+        #tooltip { position: absolute; background: var(--card-bg); border: 1px solid var(--border-light); color: white; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 20; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #loading { position: absolute; top: 50%; left: calc(50% + 175px); transform: translate(-50%, -50%); background: var(--card-bg); border: 1px solid var(--accent); color: white; padding: 25px 40px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; display: none; pointer-events: none; z-index: 100; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+        #toast { position: absolute; bottom: 30px; left: calc(50% + 175px); transform: translateX(-50%); background: var(--success); color: white; padding: 10px 20px; border-radius: 4px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3);}
 
         .export-grid { display: flex; gap: 8px; margin-bottom: 10px; }
         .btn-export { flex: 1; padding: 10px 5px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: #fff; transition: filter 0.2s; text-align: center; }
@@ -122,7 +141,7 @@
 <body>
 
     <div id="main-menu">
-        <h1 class="menu-title">MegaMap - V26.02.21.21.41</h1>
+        <h1 class="menu-title">MegaMap - V26.02.22.14.36</h1>
         <p class="menu-subtitle">A Mapping Program</p>
         <div class="menu-grid">
             <div class="menu-card">
@@ -148,10 +167,6 @@
                     <optgroup label="🌍 Africa">
                         <option value="af_countries">Africa (Nazioni)</option>
                         <option value="af_regions">Africa (Regioni)</option>
-                    </optgroup>
-                    <optgroup label="🦘 Oceania">
-                        <option value="oc_countries">Oceania (Nazioni)</option>
-                        <option value="oc_regions">Oceania (Regioni)</option>
                     </optgroup>
                     <optgroup label="📌 Focus Nazionali">
                         <option value="italy">Italia (Regioni)</option>
@@ -184,19 +199,24 @@
     <div id="editor-ui">
         <div id="sidebar">
             <div class="header">
-                <h1>Workspace GIS</h1>
+                <h1>MegaMap PRO</h1>
                 <p id="currentMapDisplay">Mappa Attiva</p>
             </div>
             <div class="tools">
                 
                 <div class="control-group">
-                    <label>Modalità Visualizzazione</label>
+                    <label>Vista & Layer Cartografici</label>
                     <div class="mode-toggle">
                         <button class="mode-btn active" data-mode="political">Politica</button>
                         <button class="mode-btn" data-mode="population">Pop</button>
                         <button class="mode-btn" data-mode="density">Densità</button>
                     </div>
                     
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                        <button class="btn" id="toggleWaterBtn" style="flex:1; background: var(--panel-bg); color: var(--water-color); font-size: 0.75rem;">💧 Acqua: ON</button>
+                        <button class="btn" id="toggleLabelsBtn" style="flex:1; background: var(--panel-bg); color: #fbbf24; font-size: 0.75rem;">🔤 Testi: OFF</button>
+                    </div>
+
                     <div id="choropleth-legend-container">
                         <div id="choropleth-bar"></div>
                         <div id="choro-labels"><span id="choro-min">0</span><span id="choro-max">Max</span></div>
@@ -235,7 +255,7 @@
                     <div id="political-legend-list"></div>
                 </div>
 
-                <div class="control-group" style="padding: 12px; margin-top: auto; background: var(--panel-bg); border: none; border-top: 1px solid var(--border-light); border-radius: 0;">
+                <div class="control-group" style="padding: 12px; margin-top: auto; background: var(--card-bg); border: none; border-top: 1px solid var(--border-light); border-radius: 0;">
                     <label style="margin-bottom: 6px;">Esporta Progetto</label>
                     <div class="export-grid">
                         <button class="btn-export" id="exportPng" title="Scarica Immagine PNG">PNG</button>
@@ -258,7 +278,7 @@
 
         <div id="map-container"><svg id="world-map"></svg></div>
         <div id="tooltip"></div>
-        <div id="loading">Elaborazione Cartografica...<br><span style="font-size:0.85rem; color:var(--text-muted); font-weight: normal;" id="loading-sub">Questo potrebbe richiedere qualche secondo.</span></div>
+        <div id="loading">Elaborazione Cartografica...<br><span style="font-size:0.85rem; color:var(--text-muted); font-weight: normal;" id="loading-sub">Caricamento in corso.</span></div>
     </div>
 
     <div id="toast">Notifica</div>
@@ -266,9 +286,12 @@
     <script>
         const EARTH_RADIUS_KM = 6371;
         const defaultLandHex = "#334155";
+        
         const URL_COUNTRIES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson";
         const URL_REGIONS = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_1_states_provinces.geojson";
         const URL_GLOBAL_HIGHRES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson";
+        const URL_RIVERS = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_rivers_lake_centerlines.geojson";
+        const URL_LAKES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_lakes.geojson";
 
         document.getElementById('importProjectFile').addEventListener('change', function(e) {
             const fileName = e.target.files.length > 0 ? e.target.files[0].name : "Nessun file...";
@@ -288,8 +311,6 @@
                 am_regions: { url: URL_REGIONS, name: "Americhe (Regioni)", prefill: false, continent: ["North America", "South America"] },
                 af_countries: { url: URL_COUNTRIES, name: "Africa (Nazioni)", prefill: false, continent: ["Africa"] },
                 af_regions: { url: URL_REGIONS, name: "Africa (Regioni)", prefill: false, continent: ["Africa"] },
-                oc_countries: { url: URL_COUNTRIES, name: "Oceania (Nazioni)", prefill: false, continent: ["Oceania"] },
-                oc_regions: { url: URL_REGIONS, name: "Oceania (Regioni)", prefill: false, continent: ["Oceania"] },
                 italy: { url: "https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_IT_regions.geojson", name: "Italia", prefill: false },
                 usa: { url: URL_REGIONS, name: "USA", prefill: false, countryFilter: "United States of America" }
             },
@@ -314,15 +335,11 @@
                     document.getElementById('menuSaveSlot').options[i-1].text = text;
                 }
             },
-            // FIX CRUCIALE: Aggiunto targetSlot per sincronizzare la Dropdown all'interno dell'editor!
             goToEditor: async (mapType, stateData = null, targetSlot = 'slot_1') => {
                 document.getElementById('main-menu').style.display = 'none'; 
                 document.getElementById('editor-ui').style.display = 'block';
                 document.getElementById('currentMapDisplay').innerText = AppManager.mapSources[mapType].name;
-                
-                // Mantiene il sistema di slot coerente
                 document.getElementById('editorSaveSlot').value = targetSlot;
-
                 editor.resize(); await editor.loadMap(mapType);
                 if (stateData) editor.applyState(stateData);
             },
@@ -331,17 +348,19 @@
 
         class GISMapEditor {
             constructor() {
-                this.container = d3.select("#map-container"); this.svg = d3.select("#world-map");
-                this.tooltip = d3.select("#tooltip"); this.g = this.svg.append("g");
+                this.container = d3.select("#map-container"); 
+                this.svg = d3.select("#world-map");
+                this.tooltip = d3.select("#tooltip"); 
+                this.g = this.svg.append("g");
                 
                 this.currentColor = "#ef4444"; this.currentMode = "political";
                 this.currentFeatures = []; this.currentPathGenerator = null;
                 this.selectedFeatureIndex = null;
+                
+                this.showWater = true;
+                this.showLabels = false;
 
-                // NUOVO: Motore della Macchina del Tempo ⏱️
-                this.history = [];
-                this.historyIndex = -1;
-                this.isApplyingState = false;
+                this.history = []; this.historyIndex = -1; this.isApplyingState = false;
 
                 this.initUI(); this.initZoom();
                 window.addEventListener('resize', () => this.resize());
@@ -350,11 +369,31 @@
             getFactionNameForColor(hexColor) {
                 for (let i = 0; i < this.currentFeatures.length; i++) {
                     const props = this.currentFeatures[i].properties;
-                    if (props._factionColor && props._factionColor.toLowerCase() === hexColor.toLowerCase()) {
-                        return props._factionName;
-                    }
+                    if (props._factionColor && props._factionColor.toLowerCase() === hexColor.toLowerCase()) { return props._factionName; }
                 }
                 return null;
+            }
+
+            getBestCentroid(d) {
+                if (!this.currentPathGenerator) return [0,0];
+                if (d.geometry.type === "Polygon") {
+                    return this.currentPathGenerator.centroid(d);
+                } else if (d.geometry.type === "MultiPolygon") {
+                    let maxArea = -1;
+                    let bestPoly = null;
+                    d.geometry.coordinates.forEach(polyCoords => {
+                        const polyFeature = { type: "Polygon", coordinates: polyCoords };
+                        const area = this.currentPathGenerator.area(polyFeature);
+                        if (area > maxArea) {
+                            maxArea = area;
+                            bestPoly = polyFeature;
+                        }
+                    });
+                    if (bestPoly) {
+                        return this.currentPathGenerator.centroid(bestPoly);
+                    }
+                }
+                return this.currentPathGenerator.centroid(d); 
             }
 
             initUI() {
@@ -362,11 +401,8 @@
                 cInput.addEventListener('input', e => { 
                     this.currentColor = e.target.value; 
                     document.getElementById('colorHex').textContent = this.currentColor.toUpperCase(); 
-                    
                     const existingName = this.getFactionNameForColor(this.currentColor);
-                    if (existingName) {
-                        document.getElementById('factionNameInput').value = existingName;
-                    }
+                    if (existingName) { document.getElementById('factionNameInput').value = existingName; }
                 });
                 
                 document.getElementById('eraserBtn').addEventListener('click', () => { 
@@ -384,6 +420,21 @@
                     });
                 });
 
+                document.getElementById('toggleWaterBtn').addEventListener('click', e => {
+                    this.showWater = !this.showWater;
+                    e.target.textContent = this.showWater ? "💧 Acqua: ON" : "💧 Acqua: OFF";
+                    e.target.style.opacity = this.showWater ? "1" : "0.5";
+                    if (this.gRivers) this.gRivers.style("display", this.showWater ? "block" : "none");
+                    if (this.gLakes) this.gLakes.style("display", this.showWater ? "block" : "none");
+                });
+
+                document.getElementById('toggleLabelsBtn').addEventListener('click', e => {
+                    this.showLabels = !this.showLabels;
+                    e.target.textContent = this.showLabels ? "🔤 Testi: ON" : "🔤 Testi: OFF";
+                    e.target.style.opacity = this.showLabels ? "1" : "0.5";
+                    this.renderLabels();
+                });
+
                 document.getElementById('insp-pop').addEventListener('input', e => {
                     if (this.selectedFeatureIndex !== null) {
                         const d = this.currentFeatures[this.selectedFeatureIndex];
@@ -394,9 +445,11 @@
                     }
                 });
 
-                // NUOVO: Salva lo stato solo quando si smette di digitare la popolazione
                 document.getElementById('insp-pop').addEventListener('change', e => {
-                    if (this.selectedFeatureIndex !== null) this.pushState();
+                    if (this.selectedFeatureIndex !== null) {
+                        this.pushState();
+                        this.renderLabels(); 
+                    }
                 });
 
                 document.getElementById('btnSaveExit').addEventListener('click', () => {
@@ -404,9 +457,7 @@
                         const slot = document.getElementById('editorSaveSlot').value.replace('slot_', '');
                         localStorage.setItem(`mapchart_pro_final_v3_${slot}`, JSON.stringify(this.generateState()));
                         AppManager.showToast("Salvato in Memoria Locale!"); 
-                    } catch (err) {
-                        AppManager.showToast("Salvataggio fallito: Browser Sandbox?", true);
-                    }
+                    } catch (err) { AppManager.showToast("Salvataggio fallito.", true); }
                     AppManager.goToMenu();
                 });
 
@@ -424,77 +475,105 @@
                 document.getElementById('exportJpg').addEventListener('click', () => this.exportMap('jpg'));
                 document.getElementById('exportPdf').addEventListener('click', () => this.exportMap('pdf'));
 
-                // NUOVO: Listener per gli Shortcut da Tastiera (Ctrl+Z / Ctrl+Y)
                 document.addEventListener('keydown', e => {
                     if (document.getElementById('editor-ui').style.display !== 'none') {
-                        if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
-                            e.preventDefault(); this.undo();
-                        } else if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
-                            e.preventDefault(); this.redo();
-                        }
+                        if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); this.undo(); }
+                        else if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); this.redo(); }
                     }
                 });
 
                 this.initSearch();
             }
 
-            // --- NUOVE FUNZIONI CORE PER LO STATO (UNDO/REDO) ---
+            // --- REINSERITO: LO SMART DECLUTTERING (Si attiva durante lo zoom!) ---
+            renderLabels() {
+                if (!this.gLabels) return;
+                this.gLabels.selectAll("*").remove(); 
+                if (!this.showLabels) return; 
+
+                const currentTransform = d3.zoomTransform(this.svg.node());
+                const currentZoomScale = Math.max(0.5, currentTransform.k);
+
+                const labelData = this.currentFeatures.filter(d => {
+                    if (this.currentMode === 'political') {
+                        return d.properties._factionColor && d.properties._factionColor !== defaultLandHex;
+                    }
+                    return (d.properties._population || 0) > 0;
+                });
+
+                this.gLabels.selectAll("text")
+                    .data(labelData)
+                    .join("text")
+                    .attr("class", "map-label")
+                    .attr("transform", d => {
+                        const centroid = this.getBestCentroid(d);
+                        if (!centroid || isNaN(centroid[0])) return "translate(-9999,-9999)";
+                        return `translate(${centroid[0]}, ${centroid[1]})`;
+                    })
+                    // RIPRISTINATO: L'algoritmo che nasconde le nazioni piccole per evitare il minestrone visivo
+                    .style("display", d => {
+                        const area = d.properties._area_km2 || 0;
+                        if (currentZoomScale < 1.5) {
+                            if (area < 1500000) return "none";
+                        } else if (currentZoomScale < 3.0) {
+                            if (area < 300000) return "none";
+                        } else if (currentZoomScale < 6.0) {
+                            if (area < 50000) return "none";
+                        } else if (currentZoomScale < 10.0) {
+                            if (area < 5000) return "none";
+                        }
+                        return "block";
+                    })
+                    .text(d => {
+                        if (this.currentMode === 'political') {
+                            return d.properties.name || d.properties.NAME || d.properties.admin || d.properties.admin0;
+                        } else if (this.currentMode === 'population') {
+                            const pop = d.properties._population;
+                            return pop >= 1000000 ? (pop / 1000000).toFixed(1) + "M" : (pop / 1000).toFixed(0) + "K";
+                        } else {
+                            return (d.properties._population / d.properties._area_km2).toFixed(1);
+                        }
+                    })
+                    .attr("font-size", `${7 / currentZoomScale}px`)
+                    .attr("stroke-width", `${1.5 / currentZoomScale}px`);
+            }
+
             pushState() {
                 if (this.isApplyingState) return;
-                
-                // Se modifichiamo qualcosa dopo aver fatto Undo, distruggiamo le timeline future alternative (come in Ritorno al Futuro)
-                if (this.historyIndex < this.history.length - 1) {
-                    this.history = this.history.slice(0, this.historyIndex + 1);
-                }
-                
+                if (this.historyIndex < this.history.length - 1) { this.history = this.history.slice(0, this.historyIndex + 1); }
                 const currentState = JSON.stringify(this.generateState());
-                
-                // Niente stati duplicati consecutivi (risparmiamo memoria)
                 if (this.historyIndex >= 0 && this.history[this.historyIndex] === currentState) return;
-
-                this.history.push(currentState);
-                this.historyIndex++;
-                
-                // Manteniamo il buffer leggero limitandolo a 50 azioni
-                if (this.history.length > 50) {
-                    this.history.shift();
-                    this.historyIndex--;
-                }
+                this.history.push(currentState); this.historyIndex++;
+                if (this.history.length > 50) { this.history.shift(); this.historyIndex--; }
             }
+            undo() { if (this.historyIndex > 0) { this.historyIndex--; this.isApplyingState = true; this.applyState(JSON.parse(this.history[this.historyIndex])); this.isApplyingState = false; AppManager.showToast("↩️ Annullato", false); } else { AppManager.showToast("Niente da annullare.", true); } }
+            redo() { if (this.historyIndex < this.history.length - 1) { this.historyIndex++; this.isApplyingState = true; this.applyState(JSON.parse(this.history[this.historyIndex])); this.isApplyingState = false; AppManager.showToast("↪️ Ripristinato", false); } }
 
-            undo() {
-                if (this.historyIndex > 0) {
-                    this.historyIndex--;
-                    this.isApplyingState = true;
-                    this.applyState(JSON.parse(this.history[this.historyIndex]));
-                    this.isApplyingState = false;
-                    AppManager.showToast("↩️ Annullato", false);
-                } else {
-                    AppManager.showToast("Più indietro di così c'è solo il Big Bang.", true);
-                }
-            }
-
-            redo() {
-                if (this.historyIndex < this.history.length - 1) {
-                    this.historyIndex++;
-                    this.isApplyingState = true;
-                    this.applyState(JSON.parse(this.history[this.historyIndex]));
-                    this.isApplyingState = false;
-                    AppManager.showToast("↪️ Ripristinato", false);
-                } else {
-                    AppManager.showToast("Nessun futuro disponibile.", true);
-                }
-            }
-            // ----------------------------------------------------
-
+            // L'EXPORT SPEGNE I TESTI, FA LA FOTO, E POI LI RIACCENDE (Senza alterare lo zoom o i file)
             async exportMap(format) {
-                AppManager.showToast("Generazione file in corso...", false);
+                AppManager.showToast("Preparazione Export in corso...", false);
                 const mapContainer = document.getElementById('map-container');
                 
-                try {
-                    this.tooltip.style("opacity", 0);
-                    const canvas = await html2canvas(mapContainer, { backgroundColor: "#1e293b", scale: 2, logging: false });
+                const currentTransform = d3.zoomTransform(this.svg.node());
+                const previousLabelsState = this.showLabels; 
+                
+                // Disattiva forzatamente i testi prima dell'esportazione
+                this.showLabels = false;
+                this.renderLabels(); 
+                
+                this.tooltip.style("opacity", 0);
+                this.svg.call(this.zoom.transform, d3.zoomIdentity);
+                
+                await new Promise(resolve => setTimeout(resolve, 50));
 
+                try {
+                    const canvas = await html2canvas(mapContainer, { backgroundColor: "#0f172a", scale: 2, logging: false });
+                    
+                    // Riporta lo zoom dove era e riaccende le etichette se erano attive
+                    this.svg.call(this.zoom.transform, currentTransform);
+                    this.showLabels = previousLabelsState;
+                    this.renderLabels();
+                    
                     if (format === 'png' || format === 'jpg') {
                         const link = document.createElement('a');
                         link.download = `MegaMap_Export_${new Date().getTime()}.${format}`;
@@ -509,19 +588,16 @@
                         pdf.save(`MegaMap_Export_${new Date().getTime()}.pdf`);
                         AppManager.showToast("Mappa esportata in PDF!");
                     }
-                } catch (error) {
-                    console.error("Export error:", error);
-                    AppManager.showToast("Errore durante l'esportazione.", true);
+                } catch (error) { 
+                    this.svg.call(this.zoom.transform, currentTransform); 
+                    this.showLabels = previousLabelsState;
+                    this.renderLabels();
+                    AppManager.showToast("Errore durante l'esportazione.", true); 
                 }
             }
 
             calculateArea(feature) { return d3.geoArea(feature) * EARTH_RADIUS_KM * EARTH_RADIUS_KM; }
-            
-            pickColor(color) { 
-                this.currentColor = color; 
-                document.getElementById('colorPicker').value = color; 
-                document.getElementById('colorHex').textContent = color.toUpperCase(); 
-            }
+            pickColor(color) { this.currentColor = color; document.getElementById('colorPicker').value = color; document.getElementById('colorHex').textContent = color.toUpperCase(); }
 
             updateViewMode() {
                 const choroContainer = document.getElementById('choropleth-legend-container');
@@ -529,9 +605,9 @@
                 const legendBar = document.getElementById('choropleth-bar');
 
                 if (this.currentMode === 'political') {
-                    choroContainer.style.display = 'none';
-                    poliContainer.style.display = 'flex'; 
-                    this.g.selectAll(".area").transition().duration(200).attr("fill", d => d.properties._factionColor || defaultLandHex);
+                    choroContainer.style.display = 'none'; poliContainer.style.display = 'flex'; 
+                    if (this.gBase) { this.gBase.selectAll(".area").transition().duration(200).attr("fill", d => d.properties._factionColor || defaultLandHex); }
+                    this.renderLabels(); 
                     return;
                 }
 
@@ -547,44 +623,29 @@
                 legendBar.style.background = `linear-gradient(to right, ${interpolator(0)}, ${interpolator(0.25)}, ${interpolator(0.5)}, ${interpolator(0.75)}, ${interpolator(1)})`;
                 document.getElementById('choro-max').textContent = isPop ? (maxVal/1000000).toFixed(1) + "M" : maxVal.toFixed(0) + " ab/km²";
 
-                this.g.selectAll(".area").transition().duration(200)
-                    .attr("fill", d => {
-                        const pop = d.properties._population || 0;
-                        if (pop === 0) return defaultLandHex; 
-                        return colorScale(isPop ? pop : (pop / d.properties._area_km2));
-                    });
+                if (this.gBase) {
+                    this.gBase.selectAll(".area").transition().duration(200)
+                        .attr("fill", d => {
+                            const pop = d.properties._population || 0; if (pop === 0) return defaultLandHex; 
+                            return colorScale(isPop ? pop : (pop / d.properties._area_km2));
+                        });
+                }
+                
+                this.renderLabels(); 
             }
 
             generatePoliticalLegend() {
-                const legendList = document.getElementById('political-legend-list'); 
-                legendList.innerHTML = '';
-                
+                const legendList = document.getElementById('political-legend-list'); legendList.innerHTML = '';
                 const factionMap = new Map(); 
-
                 this.currentFeatures.forEach(d => {
-                     const col = d.properties._factionColor;
-                     const facName = d.properties._factionName;
-                     
-                     if (col && col.toLowerCase() !== defaultLandHex.toLowerCase() && facName) { 
-                         if (!factionMap.has(col)) { 
-                             factionMap.set(col, facName); 
-                         } 
-                     }
+                     const col = d.properties._factionColor; const facName = d.properties._factionName;
+                     if (col && col.toLowerCase() !== defaultLandHex.toLowerCase() && facName) { if (!factionMap.has(col)) { factionMap.set(col, facName); } }
                 });
-
                 document.getElementById('political-legend-count').textContent = factionMap.size;
-                if (factionMap.size === 0) return;
-
                 Array.from(factionMap.entries()).sort((a, b) => a[1].localeCompare(b[1])).forEach(([color, name]) => {
-                    const item = document.createElement('div'); 
-                    item.className = 'poli-legend-item';
+                    const item = document.createElement('div'); item.className = 'poli-legend-item';
                     item.innerHTML = `<div class="poli-color-box" style="background: ${color};"></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight: bold;">${name}</span>`;
-                    
-                    item.addEventListener('click', () => {
-                        this.pickColor(color);
-                        document.getElementById('factionNameInput').value = name;
-                    });
-                    
+                    item.addEventListener('click', () => { this.pickColor(color); document.getElementById('factionNameInput').value = name; });
                     legendList.appendChild(item);
                 });
             }
@@ -594,7 +655,6 @@
                 sInput.addEventListener('input', e => {
                     const val = e.target.value.toLowerCase().trim(); sResults.innerHTML = '';
                     if (val.length < 2) { sResults.style.display = 'none'; return; }
-                    
                     const matchedNations = new Set(); const matchedRegions = [];
                     this.currentFeatures.forEach(d => {
                         const name = (d.properties.name || d.properties.NAME || d.properties.reg_name || "").toLowerCase();
@@ -602,15 +662,13 @@
                         if (admin.includes(val) && admin !== "") matchedNations.add(d.properties.admin || d.properties.admin0);
                         if (name.includes(val)) matchedRegions.push(d);
                     });
-
                     let hasResults = false;
                     if (matchedNations.size > 0) {
                         hasResults = true;
                         const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Nazioni Intere'; sResults.appendChild(catTitle);
                         Array.from(matchedNations).slice(0, 5).forEach(nation => {
                             const div = document.createElement('div'); div.className = 'search-item'; div.innerHTML = `<b>${nation}</b> <span>Colora Tutto</span>`;
-                            div.addEventListener('click', () => { this.colorAndZoomNation(nation); sInput.value = ''; sResults.style.display = 'none'; });
-                            sResults.appendChild(div);
+                            div.addEventListener('click', () => { this.colorAndZoomNation(nation); sInput.value = ''; sResults.style.display = 'none'; }); sResults.appendChild(div);
                         });
                     }
                     if (matchedRegions.length > 0) {
@@ -619,8 +677,7 @@
                         matchedRegions.slice(0, 10).forEach(d => {
                             const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area";
                             const div = document.createElement('div'); div.className = 'search-item'; div.innerHTML = `${areaName} <span>${d.properties.admin || ""}</span>`;
-                            div.addEventListener('click', () => { this.selectAndInspect(d); this.zoomToFeature(d); sInput.value = ''; sResults.style.display = 'none'; });
-                            sResults.appendChild(div);
+                            div.addEventListener('click', () => { this.selectAndInspect(d); this.zoomToFeature(d); sInput.value = ''; sResults.style.display = 'none'; }); sResults.appendChild(div);
                         });
                     }
                     sResults.style.display = hasResults ? 'block' : 'none';
@@ -629,33 +686,18 @@
 
             colorAndZoomNation(nationName) {
                 let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
-
                 if (this.currentColor.toLowerCase() !== defaultLandHex.toLowerCase()) {
-                    this.currentFeatures.forEach(f => {
-                        if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) {
-                            f.properties._factionName = targetName;
-                        }
-                    });
+                    this.currentFeatures.forEach(f => { if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) { f.properties._factionName = targetName; } });
                 }
-
                 this.currentFeatures.forEach((d, i) => {
                     if (d.properties.admin === nationName || d.properties.admin0 === nationName) {
-                        if(this.currentColor.toLowerCase() === defaultLandHex.toLowerCase()) {
-                            d.properties._factionColor = defaultLandHex;
-                            delete d.properties._factionName;
-                        } else {
-                            d.properties._factionColor = this.currentColor;
-                            d.properties._factionName = targetName;
-                        }
-                        
-                        if(this.currentMode === 'political') {
-                            d3.select("#path-" + i).attr("fill", d.properties._factionColor);
-                        }
+                        if(this.currentColor.toLowerCase() === defaultLandHex.toLowerCase()) { d.properties._factionColor = defaultLandHex; delete d.properties._factionName; } 
+                        else { d.properties._factionColor = this.currentColor; d.properties._factionName = targetName; }
+                        if(this.currentMode === 'political' && this.gBase) { this.gBase.select("#path-" + i).attr("fill", d.properties._factionColor); }
                     }
                 });
                 
-                this.generatePoliticalLegend(); 
-                if(this.currentMode === 'political') this.updateViewMode();
+                this.generatePoliticalLegend(); if(this.currentMode === 'political') this.updateViewMode();
 
                 const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
                 if (matchingFeatures.length > 0 && this.currentPathGenerator) {
@@ -665,13 +707,12 @@
                         if (b[0][0] < minX) minX = b[0][0]; if (b[0][1] < minY) minY = b[0][1];
                         if (b[1][0] > maxX) maxX = b[1][0]; if (b[1][1] > maxY) maxY = b[1][1];
                     });
-                    
                     const dx = maxX - minX, dy = maxY - minY, x = (minX + maxX) / 2, y = (minY + maxY) / 2;
                     const scale = Math.max(1, Math.min(40, 0.8 / Math.max(dx / this.width, dy / this.height)));
                     this.svg.transition().duration(800).call(this.zoom.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
                 }
-
-                // NUOVO: Aggiorna lo stack di memoria dopo aver colorato
+                
+                this.renderLabels();
                 this.pushState();
             }
 
@@ -682,33 +723,21 @@
                 document.getElementById('insp-admin').textContent = d.properties.admin || d.properties.admin0 || "---";
                 document.getElementById('insp-area').textContent = d.properties._area_km2.toLocaleString('it-IT', {maximumFractionDigits:0}) + " km²";
                 
-                const pop = d.properties._population || 0;
-                document.getElementById('insp-pop').value = pop > 0 ? pop : "";
-                
-                const density = pop > 0 ? pop / d.properties._area_km2 : 0;
-                document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
+                const pop = d.properties._population || 0; document.getElementById('insp-pop').value = pop > 0 ? pop : "";
+                const density = pop > 0 ? pop / d.properties._area_km2 : 0; document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
 
                 if (this.currentColor.toLowerCase() === defaultLandHex.toLowerCase()) {
-                    d.properties._factionColor = defaultLandHex;
-                    delete d.properties._factionName;
+                    d.properties._factionColor = defaultLandHex; delete d.properties._factionName;
                 } else {
                     let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
-                    
-                    this.currentFeatures.forEach(f => {
-                        if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) {
-                            f.properties._factionName = targetName;
-                        }
-                    });
-                    
-                    d.properties._factionColor = this.currentColor;
-                    d.properties._factionName = targetName;
+                    this.currentFeatures.forEach(f => { if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) { f.properties._factionName = targetName; } });
+                    d.properties._factionColor = this.currentColor; d.properties._factionName = targetName;
                 }
                 
-                this.generatePoliticalLegend();
-                this.updateViewMode();
-                if(this.currentMode === 'political') { d3.select("#path-" + i).attr("fill", this.currentColor); }
-
-                // NUOVO: Aggiorna lo stack di memoria dopo il click
+                this.generatePoliticalLegend(); this.updateViewMode();
+                if(this.currentMode === 'political' && this.gBase) { this.gBase.select("#path-" + i).attr("fill", this.currentColor); }
+                
+                this.renderLabels();
                 this.pushState();
             }
 
@@ -722,11 +751,7 @@
                 const stateData = {};
                 this.currentFeatures.forEach((d, i) => { 
                     if ((d.properties._factionColor && d.properties._factionColor !== defaultLandHex) || d.properties._population > 0) {
-                        stateData[i] = { 
-                            c: d.properties._factionColor, 
-                            f: d.properties._factionName,
-                            p: d.properties._population || 0 
-                        };
+                        stateData[i] = { c: d.properties._factionColor, f: d.properties._factionName, p: d.properties._population || 0 };
                     } 
                 });
                 return { mapType: this.currentMapType, data: stateData };
@@ -739,110 +764,64 @@
                     d.properties._factionName = saved && saved.f ? saved.f : undefined;
                     d.properties._population = saved && saved.p ? saved.p : 0;
                 });
-                this.generatePoliticalLegend(); 
-                this.updateViewMode();
-
-                // NUOVO: Assicura che i colori sulla mappa si aggiornino in tempo reale durante l'Undo
-                if (this.currentMode === 'political') {
-                    this.g.selectAll(".area").attr("fill", d => d.properties._factionColor || defaultLandHex);
-                }
+                this.generatePoliticalLegend(); this.updateViewMode();
+                if (this.currentMode === 'political' && this.gBase) { this.gBase.selectAll(".area").attr("fill", d => d.properties._factionColor || defaultLandHex); }
+                this.renderLabels(); 
             }
 
             initZoom() { 
-                this.zoom = d3.zoom().scaleExtent([0.5, 250]).on("zoom", e => this.g.attr("transform", e.transform)); 
+                this.zoom = d3.zoom().scaleExtent([0.5, 250]).on("zoom", e => {
+                    this.gBase.attr("transform", e.transform);
+                    this.gRivers.attr("transform", e.transform);
+                    this.gLakes.attr("transform", e.transform);
+                    this.gLabels.attr("transform", e.transform); 
+
+                    this.renderLabels();
+                }); 
                 this.svg.call(this.zoom); 
             }
             
             resize() { if(document.getElementById('editor-ui').style.display !== 'none') { this.width = this.container.node().getBoundingClientRect().width; this.height = this.container.node().getBoundingClientRect().height; } }
 
             async loadMap(mapType) {
-                const config = AppManager.mapSources[mapType];
-                this.currentMapType = mapType; this.g.selectAll("*").remove(); 
+                const config = AppManager.mapSources[mapType]; this.currentMapType = mapType; this.g.selectAll("*").remove(); 
                 document.getElementById("loading").style.display = "block";
                 
-                document.getElementById('inspector-panel').style.display = 'none';
-                document.getElementById('political-legend-list').innerHTML = ''; 
-                document.getElementById('political-legend-count').textContent = "0"; 
-                document.getElementById('searchInput').value = ''; 
-                document.getElementById('searchResults').style.display = 'none';
-                this.selectedFeatureIndex = null;
+                document.getElementById('inspector-panel').style.display = 'none'; document.getElementById('political-legend-list').innerHTML = ''; 
+                document.getElementById('political-legend-count').textContent = "0"; document.getElementById('searchInput').value = ''; 
+                document.getElementById('searchResults').style.display = 'none'; this.selectedFeatureIndex = null;
 
                 try {
-                    const res = await fetch(config.url); 
-                    if(!res.ok) throw new Error("Errore network");
-                    let geoData = await res.json();
+                    const [resMap, resRivers, resLakes] = await Promise.all([ fetch(config.url), fetch(URL_RIVERS), fetch(URL_LAKES) ]);
+                    let geoData = await resMap.json(); this.riversData = await resRivers.json(); this.lakesData = await resLakes.json();
                     
-                    if (config.countryFilter) {
-                        document.getElementById("loading-sub").textContent = "Filtro nazione in corso...";
-                        geoData.features = geoData.features.filter(d => {
-                            const admin = d.properties.admin || d.properties.admin0 || d.properties.NAME || "";
-                            return admin === config.countryFilter;
-                        });
-                    } else if (config.continent) {
-                        document.getElementById("loading-sub").textContent = "Filtro geografico in corso...";
+                    if (config.countryFilter) { geoData.features = geoData.features.filter(d => (d.properties.admin || d.properties.admin0 || d.properties.NAME || "") === config.countryFilter); } 
+                    else if (config.continent) {
                         let validCountries = null;
-                        
                         if (config.url === URL_REGIONS) {
-                            const admin0Res = await fetch(URL_COUNTRIES);
-                            const admin0Data = await admin0Res.json();
-                            validCountries = new Set(
-                                admin0Data.features
-                                    .filter(f => config.continent.includes(f.properties.CONTINENT))
-                                    .map(f => f.properties.ADMIN || f.properties.admin || f.properties.admin0)
-                            );
+                            const admin0Res = await fetch(URL_COUNTRIES); const admin0Data = await admin0Res.json();
+                            validCountries = new Set(admin0Data.features.filter(f => config.continent.includes(f.properties.CONTINENT)).map(f => f.properties.ADMIN || f.properties.admin || f.properties.admin0));
                         }
-
                         geoData.features = geoData.features.filter(d => {
-                            let keep = false;
-                            const adminName = d.properties.admin || d.properties.admin0 || d.properties.NAME;
-
-                            if (validCountries) {
-                                keep = validCountries.has(adminName);
-                            } else {
-                                keep = config.continent.includes(d.properties.CONTINENT);
-                            }
-
+                            let keep = false; const adminName = d.properties.admin || d.properties.admin0 || d.properties.NAME;
+                            if (validCountries) { keep = validCountries.has(adminName); } else { keep = config.continent.includes(d.properties.CONTINENT); }
                             if (keep && config.url === URL_REGIONS) {
-                                const centroid = d3.geoCentroid(d); 
-                                const lon = centroid[0];
-                                const lat = centroid[1];
-
-                                if (adminName === "Russia") {
-                                    if (config.continent.includes("Europe") && lon >= 60) keep = false; 
-                                    if (config.continent.includes("Asia") && lon < 60) keep = false;
-                                }
-                                if (adminName === "Turkey") {
-                                    if (config.continent.includes("Europe") && lon >= 28) keep = false;
-                                    if (config.continent.includes("Asia") && lon < 28) keep = false;
-                                }
-                                if (adminName === "France" || adminName === "Netherlands") {
-                                    if (config.continent.includes("Europe") && (lon < -30 || lon > 40 || lat < 30)) keep = false;
-                                }
+                                const centroid = d3.geoCentroid(d); const lon = centroid[0]; const lat = centroid[1];
+                                if (adminName === "Russia") { if (config.continent.includes("Europe") && lon >= 60) keep = false; if (config.continent.includes("Asia") && lon < 60) keep = false; }
+                                if (adminName === "Turkey") { if (config.continent.includes("Europe") && lon >= 28) keep = false; if (config.continent.includes("Asia") && lon < 28) keep = false; }
+                                if (adminName === "France" || adminName === "Netherlands") { if (config.continent.includes("Europe") && (lon < -30 || lon > 40 || lat < 30)) keep = false; }
                             }
                             return keep;
                         });
                     }
                     
-                    document.getElementById("loading-sub").textContent = "Costruzione colori univoci...";
-
                     const uniqueAdmins = Array.from(new Set(geoData.features.map(d => d.properties.admin || d.properties.admin0 || d.properties.NAME || "N/A")));
-                    const colorMap = new Map();
-                    const usedHex = new Set([defaultLandHex.toLowerCase()]); 
-                    
+                    const colorMap = new Map(); const usedHex = new Set([defaultLandHex.toLowerCase()]); 
                     uniqueAdmins.forEach((admin, index) => {
-                        let hue = (index * 137.508) % 360; 
-                        let saturation = 65 + (index % 3) * 10; 
-                        let lightness = 50 + (index % 4) * 10;  
+                        let hue = (index * 137.508) % 360; let saturation = 65 + (index % 3) * 10; let lightness = 50 + (index % 4) * 10;  
                         let hex = d3.color(`hsl(${hue}, ${saturation}%, ${lightness}%)`).formatHex().toLowerCase();
-                        
-                        let tweak = 0;
-                        while(usedHex.has(hex)) {
-                            tweak++;
-                            hue = (hue + tweak * 11) % 360;
-                            hex = d3.color(`hsl(${hue}, ${saturation}%, ${lightness}%)`).formatHex().toLowerCase();
-                        }
-                        usedHex.add(hex);
-                        colorMap.set(admin, hex);
+                        let tweak = 0; while(usedHex.has(hex)) { tweak++; hue = (hue + tweak * 11) % 360; hex = d3.color(`hsl(${hue}, ${saturation}%, ${lightness}%)`).formatHex().toLowerCase(); }
+                        usedHex.add(hex); colorMap.set(admin, hex);
                     });
 
                     geoData.features.forEach(d => { 
@@ -850,109 +829,72 @@
                         if (config.prefill) {
                             d.properties._population = Math.max(0, d.properties.POP_EST || 0);
                             const countryName = d.properties.admin || d.properties.NAME || d.properties.admin0 || d.properties.reg_name || "N/A";
-                            
-                            d.properties._factionColor = colorMap.get(countryName);
-                            d.properties._factionName = countryName; 
-                            
-                        } else {
-                            d.properties._population = 0;
-                            d.properties._factionColor = defaultLandHex; 
-                        }
+                            d.properties._factionColor = colorMap.get(countryName); d.properties._factionName = countryName; 
+                        } else { d.properties._population = 0; d.properties._factionColor = defaultLandHex; }
                     });
                     
-                    this.currentFeatures = geoData.features; 
-                    this.drawMap(geoData);
+                    this.currentFeatures = geoData.features; this.drawMap(geoData);
+                    this.history = []; this.historyIndex = -1; this.pushState();
 
-                    // NUOVO: Inizializza la cronologia pulita una volta terminato il caricamento
-                    this.history = [];
-                    this.historyIndex = -1;
-                    this.pushState(); // Salva lo stato intatto come punto zero
-
-                } catch (e) { AppManager.showToast("Errore di caricamento mappa.", true); console.error(e);}
+                } catch (e) { AppManager.showToast("Errore di caricamento vettori.", true); console.error(e);}
                 document.getElementById("loading").style.display = "none";
             }
 
             drawMap(geoData) {
                 let proj;
-                
                 if (this.currentMapType === 'usa') {
                     const validStates = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","District of Columbia","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
-                    
                     geoData.features = geoData.features.filter(d => validStates.includes(d.properties.name || d.properties.NAME));
-                    
                     proj = d3.geoAlbersUsa().fitSize([this.width - 20, this.height - 20], geoData);
-                } else {
-                    proj = d3.geoMercator().fitSize([this.width - 20, this.height - 20], geoData);
-                }
+                } else { proj = d3.geoMercator().fitSize([this.width - 20, this.height - 20], geoData); }
 
                 this.currentPathGenerator = d3.geoPath().projection(proj);
 
-                this.g.selectAll("path").data(geoData.features).enter().append("path").attr("class", "area").attr("id", (d,i) => "path-"+i)
+                this.g.selectAll("*").remove(); 
+                this.gBase = this.g.append("g").attr("class", "layer-base");
+                this.gRivers = this.g.append("g").attr("class", "layer-rivers");
+                this.gLakes = this.g.append("g").attr("class", "layer-lakes");
+                this.gLabels = this.g.append("g").attr("class", "layer-labels");
+
+                this.gBase.selectAll("path").data(geoData.features).enter().append("path").attr("class", "area").attr("id", (d,i) => "path-"+i)
                     .attr("d", this.currentPathGenerator).attr("fill", defaultLandHex)
                     .on("mouseover", (e, d) => {
-                        const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area Sconosciuta";
+                        const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Sconosciuta";
                         const adminName = d.properties.admin || d.properties.admin0 || "";
-                        
                         let t = `<b style="display:block; margin-bottom:2px;">${areaName}</b>`;
                         if (adminName) t += `<span style="color:var(--accent); font-size:10px; text-transform:uppercase;">${adminName}</span>`;
-                        
-                        if (d.properties._factionName) {
-                            t += `<div style="margin-top:4px; font-size:11px; color:#facc15; font-weight:bold;">● ${d.properties._factionName}</div>`;
-                        }
-
+                        if (d.properties._factionName) { t += `<div style="margin-top:4px; font-size:11px; color:#facc15; font-weight:bold;">● ${d.properties._factionName}</div>`; }
                         const pop = d.properties._population || 0;
-                        if (pop > 0) {
-                            const dens = pop / d.properties._area_km2;
-                            t += `<hr style="border:0; border-top:1px solid var(--border-light); margin:6px 0;">`;
-                            t += `<span style="font-size:11px; color:var(--success);">Pop: ${pop.toLocaleString()} | Dens: ${dens.toFixed(1)}</span>`;
-                        }
+                        if (pop > 0) { const dens = pop / d.properties._area_km2; t += `<hr style="border:0; border-top:1px solid var(--border-light); margin:6px 0;"><span style="font-size:11px; color:var(--success);">Pop: ${pop.toLocaleString()} | Dens: ${dens.toFixed(1)}</span>`; }
                         this.tooltip.style("opacity", 1).html(t);
                     })
                     .on("mousemove", e => this.tooltip.style("left", (e.pageX + 15)+"px").style("top", (e.pageY - 15)+"px"))
                     .on("mouseout", () => this.tooltip.style("opacity", 0))
                     .on("click", (e, d) => { this.selectAndInspect(d); });
                 
-                this.generatePoliticalLegend();
-                this.updateViewMode();
+                if (this.riversData && this.riversData.features) { this.gRivers.selectAll("path").data(this.riversData.features).enter().append("path").attr("d", this.currentPathGenerator).attr("class", "river"); }
+                if (this.lakesData && this.lakesData.features) { this.gLakes.selectAll("path").data(this.lakesData.features).enter().append("path").attr("d", this.currentPathGenerator).attr("class", "lake"); }
+                
+                this.gRivers.style("display", this.showWater ? "block" : "none");
+                this.gLakes.style("display", this.showWater ? "block" : "none");
+
+                this.generatePoliticalLegend(); this.updateViewMode(); this.renderLabels();
             }
         }
-        const editor = new GISMapEditor();
-        AppManager.refreshSlots();
 
-        // FIX: Propaghiamo la selezione "slot_1" per i nuovi progetti
-        document.getElementById('btnStartNew').addEventListener('click', () => {
-            AppManager.goToEditor(document.getElementById('startMapSelector').value, null, 'slot_1');
-        });
-        
-        // FIX: Leggiamo l'ID esatto dal menu e lo passiamo a goToEditor per sincronizzare la tendina dell'Editor!
+        const editor = new GISMapEditor(); AppManager.refreshSlots();
+
+        document.getElementById('btnStartNew').addEventListener('click', () => { AppManager.goToEditor(document.getElementById('startMapSelector').value, null, 'slot_1'); });
         document.getElementById('btnLoadLocal').addEventListener('click', () => {
-            const slotValue = document.getElementById('menuSaveSlot').value; // es: "slot_2"
-            const slotId = slotValue.replace('slot_', '');
+            const slotValue = document.getElementById('menuSaveSlot').value; const slotId = slotValue.replace('slot_', '');
             const data = localStorage.getItem(`mapchart_pro_final_v3_${slotId}`);
-            if (data) {
-                AppManager.goToEditor(JSON.parse(data).mapType, JSON.parse(data), slotValue); 
-            } else {
-                AppManager.showToast("Slot vuoto", true);
-            }
+            if (data) { AppManager.goToEditor(JSON.parse(data).mapType, JSON.parse(data), slotValue); } else { AppManager.showToast("Slot vuoto", true); }
         });
-
-        // FIX: Anche nei progetti importati da JSON mettiamo il blocco di default su slot_1
         document.getElementById('btnImportProject').addEventListener('click', () => {
-            const fileInput = document.getElementById('importProjectFile');
-            if (!fileInput.files.length) { AppManager.showToast("Seleziona un file prima!", true); return; }
-            
-            const file = fileInput.files[0];
+            const fileInput = document.getElementById('importProjectFile'); if (!fileInput.files.length) { AppManager.showToast("Seleziona file!", true); return; }
             const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const stateData = JSON.parse(e.target.result);
-                    if (!stateData.mapType) throw new Error("Formato progetto non valido");
-                    AppManager.goToEditor(stateData.mapType, stateData, 'slot_1');
-                } catch (err) {
-                    AppManager.showToast("File JSON corrotto o invalido.", true);
-                }
-            };
-            reader.readAsText(file);
+            reader.onload = (e) => { try { const stateData = JSON.parse(e.target.result); if (!stateData.mapType) throw new Error(); AppManager.goToEditor(stateData.mapType, stateData, 'slot_1'); } catch (err) { AppManager.showToast("File JSON corrotto.", true); } };
+            reader.readAsText(fileInput.files[0]);
         });
     </script>
 </body>
