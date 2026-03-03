@@ -2,157 +2,42 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MegaMap - V26.02.22.14.53</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MegaMap PRO - V36.1 Enterprise</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="icon" type="image/png" href="favicon.png">
-    <meta name="description" content="Il motore GIS definitivo per creare mappe coropletiche e politiche.">
-    <style>
-        :root {
-            --bg-ocean: #0f172a; 
-            --panel-bg: #1e293b; 
-            --card-bg: #0f172a;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent: #2563eb; 
-            --success: #16a34a;
-            --danger: #dc2626;
-            --border-light: #334155;
-            --btn-hover: #3b82f6;
-            --water-color: #38bdf8;
+    <link rel="stylesheet" href="style.css">
+    
+    <script>
+        if (window.location.protocol === 'file:') {
+            document.addEventListener("DOMContentLoaded", () => {
+                document.body.innerHTML = `
+                    <div style="background:#0f172a; color:white; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif; text-align:center; padding: 20px;">
+                        <h1 style="color:#ef4444; font-size:3rem; margin-bottom:10px;">⚠️ BLOCCO CORS DEL BROWSER</h1>
+                        <p style="font-size:1.2rem; max-width:700px; line-height:1.6;">
+                            Hai aperto il file tramite doppio click (protocollo <i>file:///</i>).<br>
+                            Per motivi di sicurezza, i browser bloccano l'esecuzione di architetture a moduli multipli (ES6) in locale.<br><br>
+                            <b>COME RISOLVERE:</b> Apri la cartella con <i>VS Code</i>, installa l'estensione <b>Live Server</b> e avvia il file cliccando su <i>"Open with Live Server"</i>.
+                        </p>
+                    </div>`;
+            });
         }
-        
-        body { margin: 0; overflow: hidden; background-color: var(--bg-ocean); font-family: 'Inter', 'Segoe UI', sans-serif; color: var(--text-main); user-select: none; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--panel-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-        /* --- MAIN MENU --- */
-        #main-menu { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #020617; z-index: 50; }
-        .menu-title { font-size: 3rem; margin: 0 0 10px 0; font-weight: 800; color: #fff; letter-spacing: -1px; }
-        .menu-subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; }
-        .menu-grid { display: flex; gap: 20px; max-width: 1000px; width: 95%; align-items: stretch; }
-        .menu-card { background: var(--panel-bg); border: 1px solid var(--border-light); padding: 30px; border-radius: 8px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .menu-card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        
-        select, .custom-input { width: 100%; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--border-light); font-size: 0.9rem; outline: none; background: var(--card-bg); color: var(--text-main); box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
-        select { cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 35px; }
-        select:focus, .custom-input:focus { border-color: var(--accent); }
-        optgroup { background: var(--panel-bg); color: var(--accent); font-weight: bold; }
-        option { background: var(--card-bg); color: #fff; font-weight: normal; }
-
-        .btn { background: var(--border-light); border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: 600; color: #fff; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
-        .btn:hover { background: var(--text-muted); }
-        .btn-primary { background: var(--accent); }
-        .btn-primary:hover { background: var(--btn-hover); }
-        .btn-success { background: var(--success); }
-        .btn-success:hover { background: #15803d; }
-        
-        /* Glow effects for 3D Mode */
-        .btn-3d { background: linear-gradient(45deg, #6366f1, #a855f7); color: white; border: none; font-weight: 800; letter-spacing: 1px; }
-        .btn-3d:hover { background: linear-gradient(45deg, #4f46e5, #9333ea); filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5)); }
-
-        .file-upload-wrapper { position: relative; width: 100%; height: 42px; display: flex; align-items: center; background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 4px; overflow: hidden; }
-        .file-upload-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
-        .file-upload-btn { background: var(--border-light); padding: 0 15px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #fff; z-index: 1; border-right: 1px solid var(--card-bg); }
-        .file-name-display { padding-left: 10px; font-size: 0.8rem; color: var(--text-muted); z-index: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: calc(100% - 110px); }
-
-        /* --- EDITOR UI --- */
-        #editor-ui { display: none; width: 100vw; height: 100vh; }
-        #sidebar { position: absolute; top: 0; left: 0; width: 350px; height: 100vh; background: var(--panel-bg); border-right: 1px solid var(--border-light); z-index: 10; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
-        .header { padding: 15px 20px; background: #020617; text-align: center; border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
-        .header h1 { margin: 0; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); }
-        .header p { margin: 4px 0 0 0; font-size: 0.75rem; color: #fff; font-weight: bold; text-transform: uppercase; }
-        
-        .tools { padding: 15px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .control-group { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 4px; padding: 15px; flex-shrink: 0; }
-        .control-group label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .toolbar-flex { display: flex; gap: 10px; align-items: center; }
-        
-        .mode-toggle { display: flex; background: var(--panel-bg); border-radius: 4px; padding: 4px; border: 1px solid var(--border-light); margin-bottom: 10px;}
-        .mode-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; border-radius: 2px; transition: 0.2s; }
-        .mode-btn.active { background: var(--accent); color: white; }
-
-        .color-picker-wrapper { display: flex; align-items: center; background: var(--panel-bg); border: 1px solid var(--border-light); border-radius: 4px; padding: 4px 12px 4px 4px; gap: 10px; flex-grow: 1;}
-        input[type="color"] { -webkit-appearance: none; border: none; width: 28px; height: 28px; border-radius: 2px; cursor: pointer; padding: 0; background: transparent; }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-light); border-radius: 2px; }
-        #colorHex { font-family: 'Fira Code', monospace; font-size: 0.85rem; font-weight: bold; }
-        
-        #searchResults { position: absolute; width: calc(100% - 30px); max-height: 200px; overflow-y: auto; background: var(--panel-bg); border: 1px solid var(--accent); border-radius: 4px; z-index: 20; display: none; margin-top: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .search-category { background: var(--card-bg); font-size: 0.7rem; font-weight: bold; color: var(--accent); padding: 6px 12px; text-transform: uppercase; }
-        .search-item { padding: 8px 12px; border-bottom: 1px solid var(--border-light); cursor: pointer; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
-        .search-item:hover { background: var(--border-light); color: #fff; }
-
-        #inspector-panel { border-left: 3px solid var(--accent); display: none; }
-        #insp-name { font-size: 1.1rem; font-weight: bold; color: #fff; margin-bottom: 2px; }
-        #insp-admin { font-size: 0.75rem; color: var(--accent); margin-bottom: 10px; font-weight: bold;}
-        .insp-stat { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-light); padding-bottom: 4px;}
-        .insp-stat span { color: #fff; font-family: monospace; font-size: 0.85rem;}
-
-        #political-legend-container { display: flex; flex-grow: 1; flex-shrink: 0; min-height: 150px; overflow: hidden; flex-direction: column; }
-        .legend-title { font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); text-transform: uppercase;}
-        .legend-count { background: var(--border-light); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
-        #political-legend-list { overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 6px;}
-        .poli-legend-item { display: flex; align-items: center; gap: 10px; background: var(--panel-bg); padding: 6px; border-radius: 4px; border: 1px solid var(--border-light); font-size: 0.85rem; cursor: pointer; transition: background 0.2s;}
-        .poli-legend-item:hover { background: var(--border-light); }
-        .poli-color-box { width: 16px; height: 16px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; }
-
-        #choropleth-legend-container { display: none; }
-        #choropleth-bar { height: 10px; background: #fff; border-radius: 2px; margin-top: 10px; border: 1px solid var(--border-light);}
-        #choro-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; font-family: monospace;}
-
-        #map-container { position: absolute; top: 0; left: 350px; width: calc(100vw - 350px); height: 100vh; cursor: grab; background: var(--bg-ocean); overflow: hidden; }
-        #map-container:active { cursor: grabbing; }
-        svg { width: 100%; height: 100%; display: block; }
-        
-        .area { stroke: #0f172a; stroke-width: 0.4px; stroke-linejoin: round; stroke-linecap: round; shape-rendering: geometricPrecision; vector-effect: non-scaling-stroke; transition: fill 0.2s ease; cursor: pointer; }
-        .area:hover { stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
-        
-        .river { fill: none; stroke: var(--water-color); stroke-width: 0.6px; vector-effect: non-scaling-stroke; pointer-events: none; opacity: 0.6; }
-        .lake { fill: var(--water-color); stroke: none; pointer-events: none; opacity: 0.75; }
-        
-        .map-label {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            fill: #ffffff;
-            text-anchor: middle;
-            dominant-baseline: central;
-            pointer-events: none;
-            paint-order: stroke; 
-            stroke: #0f172a;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            transition: opacity 0.2s, display 0.2s;
-        }
-
-        #tooltip { position: absolute; background: var(--card-bg); border: 1px solid var(--border-light); color: white; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 20; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        #loading { position: absolute; top: 50%; left: calc(50% + 175px); transform: translate(-50%, -50%); background: var(--card-bg); border: 1px solid var(--accent); color: white; padding: 25px 40px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; display: none; pointer-events: none; z-index: 100; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-        #toast { position: absolute; bottom: 30px; left: calc(50% + 175px); transform: translateX(-50%); background: var(--success); color: white; padding: 10px 20px; border-radius: 4px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 200; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3);}
-
-        .export-grid { display: flex; gap: 8px; margin-bottom: 10px; }
-        .btn-export { flex: 1; padding: 10px 5px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: #fff; transition: filter 0.2s; text-align: center; }
-        .btn-export:hover { filter: brightness(1.2); }
-        #exportPng { background: var(--border-light); }
-        #exportJpg { background: var(--border-light); }
-        #exportPdf { background: var(--accent); }
-        #btnExportProject { background: var(--text-muted); }
-    </style>
+    </script>
 </head>
 <body>
 
+    <button id="menu-toggle-btn" style="display: none;" title="Menu Strumenti">☰</button>
+
     <div id="main-menu">
-        <h1 class="menu-title">MegaMap - V26.02.22.14.53</h1>
-        <p class="menu-subtitle">A Mapping Program</p>
+        <h1 class="menu-title">MegaMap PRO</h1>
+        <p class="menu-subtitle">Modular Tactical Engine V36.1</p>
         <div class="menu-grid">
             <div class="menu-card">
                 <h2>Nuovo Progetto</h2>
-                <select id="startMapSelector" style="margin-bottom: 15px; height: 42px;">
+                <select id="startMapSelector" class="custom-input">
                     <optgroup label="🌍 Mappe Globali">
-                        <option value="world_complete">Mondo Completo (Dati Reali)</option>
+                        <option value="world_complete">Mondo Completo (Alta Res)</option>
                         <option value="world_countries">Mondo (Solo Nazioni)</option>
                         <option value="world_regions">Mondo (Solo Regioni)</option>
                     </optgroup>
@@ -181,7 +66,7 @@
             </div>
             <div class="menu-card">
                 <h2>Memoria Locale</h2>
-                <select id="menuSaveSlot" style="margin-bottom: 15px; height: 42px;">
+                <select id="menuSaveSlot" class="custom-input">
                     <option value="slot_1">Slot 1: Vuoto</option>
                     <option value="slot_2">Slot 2: Vuoto</option>
                     <option value="slot_3">Slot 3: Vuoto</option>
@@ -190,12 +75,12 @@
             </div>
             <div class="menu-card">
                 <h2>Importa Progetto</h2>
-                <div class="file-upload-wrapper" style="margin-bottom: 15px;">
+                <div class="file-upload-wrapper">
                     <input type="file" id="importProjectFile" accept=".json" class="file-upload-input">
-                    <div class="file-upload-btn">Sfoglia</div>
+                    <div class="file-upload-btn">Sfoglia JSON</div>
                     <div id="fileNameDisplay" class="file-name-display">Nessun file...</div>
                 </div>
-                <button class="btn btn-primary" id="btnImportProject" style="background: var(--text-muted);">Carica da JSON</button>
+                <button class="btn btn-primary" id="btnImportProject" style="background: var(--text-muted); margin-top:10px;">Carica Progetto</button>
             </div>
         </div>
     </div>
@@ -203,866 +88,97 @@
     <div id="editor-ui">
         <div id="sidebar">
             <div class="header">
-                <h1>MegaMap 3D</h1>
+                <h1>MegaMap PRO</h1>
                 <p id="currentMapDisplay">Mappa Attiva</p>
             </div>
             <div class="tools">
                 
                 <div class="control-group">
-                    <label>Vista & Motore Rendering</label>
+                    <label>Vista & Rendering</label>
                     <div class="mode-toggle">
                         <button class="mode-btn active" data-mode="political">Politica</button>
                         <button class="mode-btn" data-mode="population">Pop</button>
                         <button class="mode-btn" data-mode="density">Densità</button>
                     </div>
-                    
                     <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                        <button class="btn" id="toggleWaterBtn" style="flex:1; background: var(--panel-bg); color: var(--water-color); font-size: 0.75rem;">💧 Acqua: ON</button>
-                        <button class="btn" id="toggleLabelsBtn" style="flex:1; background: var(--panel-bg); color: #fbbf24; font-size: 0.75rem;">🔤 Testi: OFF</button>
+                        <button class="btn" id="toggleWaterBtn" style="flex:1;">💧 Acqua: ON</button>
+                        <button class="btn" id="toggleLabelsBtn" style="flex:1;">🔤 Testi: OFF</button>
                     </div>
-                    
-                    <button class="btn btn-3d" id="toggle3DBtn" style="width: 100%; margin-top: 5px; font-size: 0.8rem;">
-                        🌍 ATTIVA GLOBO 3D
-                    </button>
+                    <button class="btn-3d" id="toggle3DBtn">🌍 ATTIVA GLOBO 3D</button>
+                    <button class="btn" id="toggleSpinBtn" style="display: none; width: 100%; margin-top: 5px; border: 1px solid var(--danger); color: var(--danger);">⏸️ FERMA ROTAZIONE</button>
 
-                    <div id="choropleth-legend-container">
-                        <div id="choropleth-bar"></div>
-                        <div id="choro-labels"><span id="choro-min">0</span><span id="choro-max">Max</span></div>
+                    <div id="choropleth-legend-container" style="display:none; margin-top: 10px;">
+                        <div id="choropleth-bar" style="height: 10px; border-radius: 2px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">
+                            <span id="choro-min">0</span><span id="choro-max">Max</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label>Gruppi & Strumenti Pittura</label>
+                    <label>Strumenti Pittura</label>
                     <div class="toolbar-flex" style="margin-bottom: 10px;">
-                        <div class="color-picker-wrapper">
-                            <input type="color" id="colorPicker" value="#ef4444">
-                            <span id="colorHex">#EF4444</span>
-                        </div>
-                        <button class="btn" id="eraserBtn" title="Gomma Cancella Tutto" style="background: var(--panel-bg);">🧹</button>
+                        <input type="color" id="colorPicker" value="#ef4444" title="Scegli Colore">
+                        <span id="colorHex" style="font-family: monospace; font-weight: bold; flex-grow: 1;">#EF4444</span>
+                        <button class="btn" id="eraserBtn" title="Gomma Cancellatura">🧹</button>
                     </div>
-                    
-                    <input type="text" id="factionNameInput" class="custom-input" placeholder="Nome Gruppo / Categoria..." value="Nuovo Gruppo" style="margin-bottom: 10px; border-color: var(--accent); color: #fff; font-weight: bold;">
+                    <input type="text" id="factionNameInput" class="custom-input" placeholder="Nome Gruppo/Nazione..." value="Nuovo Gruppo">
                     
                     <div style="position: relative;">
-                        <input type="text" id="searchInput" class="custom-input" placeholder="Cerca Nazione/Regione da colorare...">
-                        <div id="searchResults"></div>
+                        <input type="text" id="searchInput" class="custom-input" placeholder="Cerca Nazione/Regione...">
+                        <div id="searchResults" style="display:none; position:absolute; width:100%; max-height:200px; overflow-y:auto; background:var(--panel-bg); border:1px solid var(--accent); z-index:20; border-radius:4px; margin-top: -10px;"></div>
                     </div>
+                    <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0;"><i>* Click Destro sulla mappa per i Marker 📍</i></p>
                 </div>
 
-                <div class="control-group" id="inspector-panel">
-                    <label>Ispettore Regione</label>
-                    <div id="insp-name">Nessuna Selezione</div>
-                    <div id="insp-admin">---</div>
-                    <div class="insp-stat">Area: <span id="insp-area">0</span></div>
-                    <input type="number" id="insp-pop" class="custom-input" placeholder="Popolazione..." style="margin-bottom: 10px; background: var(--panel-bg);">
-                    <div class="insp-stat" style="border:none; margin-bottom:0;">Densità: <span id="insp-density" style="color:var(--accent);">0</span></div>
+                <div class="control-group" id="inspector-panel" style="display: none; border-left: 3px solid var(--accent);">
+                    <label>Ispettore Area</label>
+                    <div id="insp-name" style="font-size: 1.1rem; font-weight: bold; color: #fff;">-</div>
+                    <div id="insp-admin" style="font-size: 0.75rem; color: var(--accent); margin-bottom: 10px;">-</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-muted);">Area: <span id="insp-area" style="color:#fff; font-family:monospace;">0</span></div>
+                    <input type="number" id="insp-pop" class="custom-input" placeholder="Popolazione (Abitanti)..." style="margin-bottom: 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">Densità: <span id="insp-density" style="color:var(--accent); font-weight:bold;">0</span></div>
                 </div>
 
                 <div class="control-group" id="political-legend-container">
-                    <div class="legend-title">Legenda Gruppi <span class="legend-count" id="political-legend-count">0</span></div>
-                    <div id="political-legend-list"></div>
+                    <div style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; color: var(--text-muted); text-transform: uppercase;">
+                        Legenda Colori <span id="political-legend-count" style="background: var(--border-light); color: #fff; padding: 2px 6px; border-radius: 4px;">0</span>
+                    </div>
+                    <div id="political-legend-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
 
-                <div class="control-group" style="padding: 12px; margin-top: auto; background: var(--card-bg); border: none; border-top: 1px solid var(--border-light); border-radius: 0;">
-                    <label style="margin-bottom: 6px;">Esporta Progetto</label>
-                    <div class="export-grid">
-                        <button class="btn-export" id="exportPng" title="Scarica Immagine PNG">PNG</button>
-                        <button class="btn-export" id="exportJpg" title="Scarica Immagine JPG">JPG</button>
-                        <button class="btn-export" id="exportPdf" title="Scarica Documento PDF">PDF</button>
-                        <button class="btn-export" id="btnExportProject" title="Scarica Dati Progetto JSON">JSON</button>
+                <div class="control-group" style="margin-top: auto; border: none; background: transparent; padding: 0;">
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                        <button class="btn" id="exportPng" style="flex:1" title="Scarica PNG">PNG</button>
+                        <button class="btn" id="exportJpg" style="flex:1" title="Scarica JPG">JPG</button>
+                        <button class="btn" id="exportPdf" style="flex:1; background: var(--accent);" title="Scarica PDF">PDF</button>
+                        <button class="btn" id="btnExportProject" style="flex:1" title="Salva File JSON">JSON</button>
                     </div>
-                    
-                    <div class="toolbar-flex">
-                        <select id="editorSaveSlot" style="width: 50%; font-size: 0.75rem; padding: 8px;">
-                            <option value="slot_1">Salva in Slot 1</option>
-                            <option value="slot_2">Salva in Slot 2</option>
-                            <option value="slot_3">Salva in Slot 3</option>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="editorSaveSlot" class="custom-input" style="margin-bottom: 0; flex: 1;">
+                            <option value="slot_1">Slot 1</option>
+                            <option value="slot_2">Slot 2</option>
+                            <option value="slot_3">Slot 3</option>
                         </select>
-                        <button class="btn btn-success" id="btnSaveExit" style="width: 50%; font-size: 0.75rem; padding: 8px;">Salva/Esci</button>
+                        <button class="btn btn-success" id="btnSaveExit" style="flex: 1;">Salva & Esci</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <div id="map-controls" style="display: none;">
+            <button class="map-ctrl-btn" id="btn-fullscreen" title="Schermo Intero">⛶</button>
+            <button class="map-ctrl-btn" id="btn-zoom-in" title="Avvicina">➕</button>
+            <button class="map-ctrl-btn" id="btn-zoom-out" title="Allontana">➖</button>
+        </div>
+
         <div id="map-container"><svg id="world-map"></svg></div>
         <div id="tooltip"></div>
-        <div id="loading">Elaborazione Cartografica...<br><span style="font-size:0.85rem; color:var(--text-muted); font-weight: normal;" id="loading-sub">Caricamento in corso.</span></div>
+        <div id="loading">Elaborazione...<br><span id="loading-sub" style="font-size:0.85rem; color:var(--text-muted);">Inizializzazione Motore Vettoriale</span></div>
     </div>
 
-    <div id="toast">Notifica</div>
+    <div id="toast">Sistema Attivo</div>
 
-    <script>
-        const EARTH_RADIUS_KM = 6371;
-        const defaultLandHex = "#334155";
-        
-        const URL_COUNTRIES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson";
-        const URL_REGIONS = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_1_states_provinces.geojson";
-        const URL_GLOBAL_HIGHRES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson";
-        const URL_RIVERS = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_rivers_lake_centerlines.geojson";
-        const URL_LAKES = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_lakes.geojson";
-
-        document.getElementById('importProjectFile').addEventListener('change', function(e) {
-            const fileName = e.target.files.length > 0 ? e.target.files[0].name : "Nessun file...";
-            document.getElementById('fileNameDisplay').textContent = fileName;
-        });
-
-        const AppManager = {
-            mapSources: {
-                world_complete: { url: URL_GLOBAL_HIGHRES, name: "Mondo Completo", prefill: true },
-                world_countries: { url: URL_COUNTRIES, name: "Mondo (Nazioni)", prefill: false },
-                world_regions: { url: URL_REGIONS, name: "Mondo (Regioni)", prefill: false },
-                eu_countries: { url: URL_COUNTRIES, name: "Europa (Nazioni)", prefill: false, continent: ["Europe"] },
-                eu_regions: { url: URL_REGIONS, name: "Europa (Regioni)", prefill: false, continent: ["Europe"] },
-                as_countries: { url: URL_COUNTRIES, name: "Asia (Nazioni)", prefill: false, continent: ["Asia"] },
-                as_regions: { url: URL_REGIONS, name: "Asia (Regioni)", prefill: false, continent: ["Asia"] },
-                am_countries: { url: URL_COUNTRIES, name: "Americhe (Nazioni)", prefill: false, continent: ["North America", "South America"] },
-                am_regions: { url: URL_REGIONS, name: "Americhe (Regioni)", prefill: false, continent: ["North America", "South America"] },
-                af_countries: { url: URL_COUNTRIES, name: "Africa (Nazioni)", prefill: false, continent: ["Africa"] },
-                af_regions: { url: URL_REGIONS, name: "Africa (Regioni)", prefill: false, continent: ["Africa"] },
-                italy: { url: "https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_IT_regions.geojson", name: "Italia", prefill: false },
-                usa: { url: URL_REGIONS, name: "USA", prefill: false, countryFilter: "United States of America" }
-            },
-            showToast: (msg, err = false) => {
-                const t = document.getElementById("toast");
-                t.textContent = msg; t.style.background = err ? "var(--danger)" : "var(--success)";
-                t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(-10px)";
-                setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(0)"; }, 3000);
-            },
-            refreshSlots: () => {
-                for (let i = 1; i <= 3; i++) {
-                    const data = localStorage.getItem(`mapchart_pro_final_v3_${i}`);
-                    let text = `Slot ${i}: Vuoto`;
-                    if (data) { 
-                        try { 
-                            const p = JSON.parse(data); 
-                            if(p && p.mapType && AppManager.mapSources[p.mapType]) {
-                                text = `Slot ${i}: ${AppManager.mapSources[p.mapType].name}`; 
-                            }
-                        } catch(e){} 
-                    }
-                    document.getElementById('menuSaveSlot').options[i-1].text = text;
-                }
-            },
-            goToEditor: async (mapType, stateData = null, targetSlot = 'slot_1') => {
-                document.getElementById('main-menu').style.display = 'none'; 
-                document.getElementById('editor-ui').style.display = 'block';
-                document.getElementById('currentMapDisplay').innerText = AppManager.mapSources[mapType].name;
-                document.getElementById('editorSaveSlot').value = targetSlot;
-                editor.resize(); await editor.loadMap(mapType);
-                if (stateData) editor.applyState(stateData);
-            },
-            goToMenu: () => { document.getElementById('editor-ui').style.display = 'none'; document.getElementById('main-menu').style.display = 'flex'; AppManager.refreshSlots(); }
-        };
-
-        class GISMapEditor {
-            constructor() {
-                this.container = d3.select("#map-container"); 
-                this.svg = d3.select("#world-map");
-                this.tooltip = d3.select("#tooltip"); 
-                
-                // INIEZIONE ATMOSFERA E ILLUMINAZIONE (SVG DEFS)
-                const defs = this.svg.append("defs");
-                const radialGradient = defs.append("radialGradient")
-                    .attr("id", "globe-glow")
-                    .attr("cx", "50%").attr("cy", "50%").attr("r", "50%");
-                radialGradient.append("stop").attr("offset", "75%").attr("stop-color", "#1e293b"); // Oceano centrale
-                radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#020617"); // Bordo scuro spaziale
-                
-                // Il globo base (Oceano e atmosfera)
-                this.oceanSphere = this.svg.append("circle")
-                    .attr("id", "ocean-sphere")
-                    .attr("fill", "url(#globe-glow)")
-                    .style("display", "none")
-                    .style("pointer-events", "all");
-
-                // Gruppi di layer
-                this.g = this.svg.append("g");
-                
-                this.currentColor = "#ef4444"; this.currentMode = "political";
-                this.currentFeatures = []; this.currentPathGenerator = null;
-                this.selectedFeatureIndex = null;
-                
-                this.showWater = true;
-                this.showLabels = false;
-                
-                // STATO 3D
-                this.is3D = false;
-                this.proj2D = null;
-                this.proj3D = d3.geoOrthographic(); 
-                this.rotation = [0, 0, 0];
-
-                this.history = []; this.historyIndex = -1; this.isApplyingState = false;
-
-                this.initUI(); this.setupInteractions();
-                window.addEventListener('resize', () => { this.resize(); this.updateProjection(); });
-            }
-
-            getFactionNameForColor(hexColor) {
-                for (let i = 0; i < this.currentFeatures.length; i++) {
-                    const props = this.currentFeatures[i].properties;
-                    if (props._factionColor && props._factionColor.toLowerCase() === hexColor.toLowerCase()) { return props._factionName; }
-                }
-                return null;
-            }
-
-            getBestCentroid(d) {
-                if (!this.currentPathGenerator) return [0,0];
-                if (d.geometry.type === "Polygon") {
-                    return this.currentPathGenerator.centroid(d);
-                } else if (d.geometry.type === "MultiPolygon") {
-                    let maxArea = -1;
-                    let bestPoly = null;
-                    d.geometry.coordinates.forEach(polyCoords => {
-                        const polyFeature = { type: "Polygon", coordinates: polyCoords };
-                        const area = this.currentPathGenerator.area(polyFeature);
-                        if (area > maxArea) {
-                            maxArea = area;
-                            bestPoly = polyFeature;
-                        }
-                    });
-                    if (bestPoly) {
-                        return this.currentPathGenerator.centroid(bestPoly);
-                    }
-                }
-                return this.currentPathGenerator.centroid(d); 
-            }
-
-            initUI() {
-                const cInput = document.getElementById('colorPicker');
-                cInput.addEventListener('input', e => { 
-                    this.currentColor = e.target.value; 
-                    document.getElementById('colorHex').textContent = this.currentColor.toUpperCase(); 
-                    const existingName = this.getFactionNameForColor(this.currentColor);
-                    if (existingName) { document.getElementById('factionNameInput').value = existingName; }
-                });
-                
-                document.getElementById('eraserBtn').addEventListener('click', () => { 
-                    this.currentColor = defaultLandHex; 
-                    document.getElementById('colorHex').textContent = "GOMMA"; 
-                    document.getElementById('factionNameInput').value = "";
-                });
-                
-                document.querySelectorAll('.mode-btn').forEach(btn => {
-                    btn.addEventListener('click', e => {
-                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
-                        this.currentMode = e.target.dataset.mode;
-                        this.updateViewMode();
-                    });
-                });
-
-                document.getElementById('toggleWaterBtn').addEventListener('click', e => {
-                    this.showWater = !this.showWater;
-                    e.target.textContent = this.showWater ? "💧 Acqua: ON" : "💧 Acqua: OFF";
-                    e.target.style.opacity = this.showWater ? "1" : "0.5";
-                    if (this.gRivers) this.gRivers.style("display", this.showWater ? "block" : "none");
-                    if (this.gLakes) this.gLakes.style("display", this.showWater ? "block" : "none");
-                });
-
-                document.getElementById('toggleLabelsBtn').addEventListener('click', e => {
-                    this.showLabels = !this.showLabels;
-                    e.target.textContent = this.showLabels ? "🔤 Testi: ON" : "🔤 Testi: OFF";
-                    e.target.style.opacity = this.showLabels ? "1" : "0.5";
-                    this.renderLabels();
-                });
-
-                // TASTO MAGICO 3D
-                document.getElementById('toggle3DBtn').addEventListener('click', e => {
-                    if (this.currentMapType === 'usa') {
-                        AppManager.showToast("Il 3D non è supportato sulla mappa USA isolata.", true);
-                        return;
-                    }
-                    this.is3D = !this.is3D;
-                    e.target.innerHTML = this.is3D ? "🗺️ RITORNA A 2D" : "🌍 ATTIVA GLOBO 3D";
-                    e.target.style.background = this.is3D ? "linear-gradient(45deg, #10b981, #3b82f6)" : "linear-gradient(45deg, #6366f1, #a855f7)";
-                    this.updateProjection();
-                });
-
-                document.getElementById('insp-pop').addEventListener('input', e => {
-                    if (this.selectedFeatureIndex !== null) {
-                        const d = this.currentFeatures[this.selectedFeatureIndex];
-                        d.properties._population = Number(e.target.value);
-                        const density = d.properties._population / d.properties._area_km2;
-                        document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
-                        if (this.currentMode !== 'political') this.updateViewMode();
-                    }
-                });
-
-                document.getElementById('insp-pop').addEventListener('change', e => {
-                    if (this.selectedFeatureIndex !== null) { this.pushState(); this.renderLabels(); }
-                });
-
-                document.getElementById('btnSaveExit').addEventListener('click', () => {
-                    try {
-                        const slot = document.getElementById('editorSaveSlot').value.replace('slot_', '');
-                        localStorage.setItem(`mapchart_pro_final_v3_${slot}`, JSON.stringify(this.generateState()));
-                        AppManager.showToast("Salvato in Memoria Locale!"); 
-                    } catch (err) { AppManager.showToast("Salvataggio fallito.", true); }
-                    AppManager.goToMenu();
-                });
-
-                document.getElementById('btnExportProject').addEventListener('click', () => {
-                    const data = JSON.stringify(this.generateState());
-                    const blob = new Blob([data], { type: "application/json" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url; a.download = `MegaMap_Project_${new Date().getTime()}.json`;
-                    a.click(); URL.revokeObjectURL(url);
-                    AppManager.showToast("Progetto esportato su disco!");
-                });
-
-                document.getElementById('exportPng').addEventListener('click', () => this.exportMap('png'));
-                document.getElementById('exportJpg').addEventListener('click', () => this.exportMap('jpg'));
-                document.getElementById('exportPdf').addEventListener('click', () => this.exportMap('pdf'));
-
-                document.addEventListener('keydown', e => {
-                    if (document.getElementById('editor-ui').style.display !== 'none') {
-                        if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); this.undo(); }
-                        else if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); this.redo(); }
-                    }
-                });
-
-                this.initSearch();
-            }
-
-            // GESTIONE DEL RENDERING 2D vs 3D
-            updateProjection() {
-                if (this.is3D) {
-                    // Imposta il globo ortografico
-                    this.oceanSphere.style("display", "block");
-                    this.proj3D.translate([this.width / 2, this.height / 2]).scale(Math.min(this.width, this.height) / 2.2).rotate(this.rotation);
-                    this.currentPathGenerator = d3.geoPath().projection(this.proj3D);
-                    // Rimuove eventuali trasformazioni del gruppo 2D
-                    this.g.attr("transform", null);
-                    
-                    // Disegna l'Atmosfera (Oceano)
-                    this.oceanSphere
-                        .attr("cx", this.width / 2)
-                        .attr("cy", this.height / 2)
-                        .attr("r", this.proj3D.scale());
-                } else {
-                    // Ripristina il 2D
-                    this.oceanSphere.style("display", "none");
-                    this.currentPathGenerator = d3.geoPath().projection(this.proj2D);
-                }
-
-                // Ridsegna tutti i percorsi vettoriali
-                if(this.gBase) this.gBase.selectAll("path").attr("d", this.currentPathGenerator);
-                if(this.gRivers) this.gRivers.selectAll("path").attr("d", this.currentPathGenerator);
-                if(this.gLakes) this.gLakes.selectAll("path").attr("d", this.currentPathGenerator);
-                
-                this.renderLabels();
-            }
-
-            setupInteractions() {
-                // IL MOTORE DI INTERAZIONE DOPPIO (Zoom per 2D, Drag/Rotate per 3D)
-                this.zoom2D = d3.zoom().scaleExtent([0.5, 250]).on("zoom", e => {
-                    if (this.is3D) {
-                        // In 3D lo zoom cambia la scala della sfera, non trasla il gruppo!
-                        const scale = (Math.min(this.width, this.height) / 2.2) * e.transform.k;
-                        this.proj3D.scale(scale);
-                        this.oceanSphere.attr("r", scale);
-                        this.updatePathsFast();
-                    } else {
-                        // In 2D muoviamo classicamente il gruppo SVG
-                        this.g.attr("transform", e.transform);
-                        this.renderLabels();
-                    }
-                });
-
-                // Il trascinamento per ruotare il pianeta (Inerzia manuale implementata nei drag)
-                this.drag3D = d3.drag()
-                    .on("start", e => {
-                        if (!this.is3D) return;
-                        this.v0 = [e.x, e.y];
-                        this.r0 = this.proj3D.rotate();
-                    })
-                    .on("drag", e => {
-                        if (!this.is3D) return;
-                        const v1 = [e.x, e.y];
-                        const k = 75 / this.proj3D.scale(); // Sensibilità alla rotazione basata sullo zoom
-                        this.rotation = [
-                            this.r0[0] + (v1[0] - this.v0[0]) * k,
-                            this.r0[1] - (v1[1] - this.v0[1]) * k,
-                            this.r0[2]
-                        ];
-                        // Limita il beccheggio (Su/Giù) per evitare rotazioni scombussolate
-                        this.rotation[1] = Math.max(-90, Math.min(90, this.rotation[1]));
-                        
-                        this.proj3D.rotate(this.rotation);
-                        this.updatePathsFast();
-                    });
-
-                // Applichiamo i listener globali al container SVG
-                this.svg.call(this.zoom2D);
-                this.svg.call(this.drag3D);
-                // Permette di trascinare il pianeta anche cliccando sull'oceano
-                this.oceanSphere.call(this.drag3D);
-            }
-
-            // Metodo rapido per aggiornare i percorsi durante l'animazione 3D senza ricalcolare tutto
-            updatePathsFast() {
-                if(this.gBase) this.gBase.selectAll("path").attr("d", this.currentPathGenerator);
-                if(this.gRivers && this.showWater) this.gRivers.selectAll("path").attr("d", this.currentPathGenerator);
-                if(this.gLakes && this.showWater) this.gLakes.selectAll("path").attr("d", this.currentPathGenerator);
-                this.renderLabels();
-            }
-
-            // SMART LABELS & 3D CULLING
-            renderLabels() {
-                if (!this.gLabels) return;
-                this.gLabels.selectAll("*").remove(); 
-                if (!this.showLabels) return; 
-
-                const currentTransform = d3.zoomTransform(this.svg.node());
-                const currentZoomScale = Math.max(0.5, currentTransform.k);
-
-                const labelData = this.currentFeatures.filter(d => {
-                    if (this.currentMode === 'political') {
-                        return d.properties._factionColor && d.properties._factionColor !== defaultLandHex;
-                    }
-                    return (d.properties._population || 0) > 0;
-                });
-
-                this.gLabels.selectAll("text")
-                    .data(labelData)
-                    .join("text")
-                    .attr("class", "map-label")
-                    .attr("transform", d => {
-                        const centroid = this.getBestCentroid(d);
-                        if (!centroid || isNaN(centroid[0])) return "translate(-9999,-9999)";
-                        
-                        // L'ECLISSI TIPOGRAFICA (Culling 3D)
-                        // In modalità 3D, se una nazione è "dietro" al globo, il suo centroide proiettato andrebbe nascosto.
-                        if (this.is3D) {
-                            // Creiamo un path fittizio di un punto. Se la proiezione Ortografica lo restituisce null, è dietro.
-                            const pointFeature = { type: "Point", coordinates: centroid };
-                            if (!this.currentPathGenerator(pointFeature)) return "translate(-9999,-9999)"; 
-                        }
-
-                        // Proiezione finale delle coordinate
-                        const projected = this.currentPathGenerator.projection()(centroid);
-                        if (!projected) return "translate(-9999,-9999)";
-                        
-                        return `translate(${projected[0]}, ${projected[1]})`;
-                    })
-                    .style("display", d => {
-                        // In 3D, lo zoom cambia il raggio della sfera, non il 'k' del transformer standard in modo utile,
-                        // quindi in 3D disabilitiamo in parte il decluttering estremo per goderci i nomi sul globo,
-                        // oppure usiamo scale() per calcolare lo zoom fittizio.
-                        const effectiveZoom = this.is3D ? (this.proj3D.scale() / (Math.min(this.width, this.height)/2.2)) : currentZoomScale;
-                        
-                        const area = d.properties._area_km2 || 0;
-                        if (effectiveZoom < 1.5) {
-                            if (area < 1500000) return "none";
-                        } else if (effectiveZoom < 3.0) {
-                            if (area < 300000) return "none";
-                        } else if (effectiveZoom < 6.0) {
-                            if (area < 50000) return "none";
-                        } else if (effectiveZoom < 10.0) {
-                            if (area < 5000) return "none";
-                        }
-                        return "block";
-                    })
-                    .text(d => {
-                        if (this.currentMode === 'political') {
-                            return d.properties.name || d.properties.NAME || d.properties.admin || d.properties.admin0;
-                        } else if (this.currentMode === 'population') {
-                            const pop = d.properties._population;
-                            return pop >= 1000000 ? (pop / 1000000).toFixed(1) + "M" : (pop / 1000).toFixed(0) + "K";
-                        } else {
-                            return (d.properties._population / d.properties._area_km2).toFixed(1);
-                        }
-                    })
-                    .attr("font-size", () => {
-                        const effectiveZoom = this.is3D ? (this.proj3D.scale() / (Math.min(this.width, this.height)/2.2)) : currentZoomScale;
-                        return `${7 / effectiveZoom}px`;
-                    })
-                    .attr("stroke-width", () => {
-                        const effectiveZoom = this.is3D ? (this.proj3D.scale() / (Math.min(this.width, this.height)/2.2)) : currentZoomScale;
-                        return `${1.5 / effectiveZoom}px`;
-                    });
-            }
-
-            pushState() {
-                if (this.isApplyingState) return;
-                if (this.historyIndex < this.history.length - 1) { this.history = this.history.slice(0, this.historyIndex + 1); }
-                const currentState = JSON.stringify(this.generateState());
-                if (this.historyIndex >= 0 && this.history[this.historyIndex] === currentState) return;
-                this.history.push(currentState); this.historyIndex++;
-                if (this.history.length > 50) { this.history.shift(); this.historyIndex--; }
-            }
-            undo() { if (this.historyIndex > 0) { this.historyIndex--; this.isApplyingState = true; this.applyState(JSON.parse(this.history[this.historyIndex])); this.isApplyingState = false; AppManager.showToast("↩️ Annullato", false); } else { AppManager.showToast("Niente da annullare.", true); } }
-            redo() { if (this.historyIndex < this.history.length - 1) { this.historyIndex++; this.isApplyingState = true; this.applyState(JSON.parse(this.history[this.historyIndex])); this.isApplyingState = false; AppManager.showToast("↪️ Ripristinato", false); } }
-
-            async exportMap(format) {
-                AppManager.showToast("Preparazione Export in corso...", false);
-                const mapContainer = document.getElementById('map-container');
-                
-                const currentTransform = d3.zoomTransform(this.svg.node());
-                const current3DScale = this.proj3D.scale();
-                const previousLabelsState = this.showLabels; 
-                
-                this.showLabels = false; this.renderLabels(); this.tooltip.style("opacity", 0);
-                
-                if (!this.is3D) { this.svg.call(this.zoom2D.transform, d3.zoomIdentity); }
-                
-                await new Promise(resolve => setTimeout(resolve, 50));
-
-                try {
-                    const canvas = await html2canvas(mapContainer, { backgroundColor: "#0f172a", scale: 2, logging: false });
-                    
-                    if (!this.is3D) { this.svg.call(this.zoom2D.transform, currentTransform); }
-                    else { this.proj3D.scale(current3DScale); this.updatePathsFast(); }
-                    
-                    this.showLabels = previousLabelsState; this.renderLabels();
-                    
-                    if (format === 'png' || format === 'jpg') {
-                        const link = document.createElement('a');
-                        link.download = `MegaMap_Export_${new Date().getTime()}.${format}`;
-                        link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`, 0.95);
-                        link.click();
-                        AppManager.showToast(`Mappa esportata in ${format.toUpperCase()}!`);
-                    } else if (format === 'pdf') {
-                        const { jsPDF } = window.jspdf;
-                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
-                        pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
-                        pdf.save(`MegaMap_Export_${new Date().getTime()}.pdf`);
-                        AppManager.showToast("Mappa esportata in PDF!");
-                    }
-                } catch (error) { 
-                    AppManager.showToast("Errore durante l'esportazione.", true); 
-                }
-            }
-
-            calculateArea(feature) { return d3.geoArea(feature) * EARTH_RADIUS_KM * EARTH_RADIUS_KM; }
-            pickColor(color) { this.currentColor = color; document.getElementById('colorPicker').value = color; document.getElementById('colorHex').textContent = color.toUpperCase(); }
-
-            updateViewMode() {
-                const choroContainer = document.getElementById('choropleth-legend-container');
-                const poliContainer = document.getElementById('political-legend-container');
-                const legendBar = document.getElementById('choropleth-bar');
-
-                if (this.currentMode === 'political') {
-                    choroContainer.style.display = 'none'; poliContainer.style.display = 'flex'; 
-                    if (this.gBase) { this.gBase.selectAll(".area").transition().duration(200).attr("fill", d => d.properties._factionColor || defaultLandHex); }
-                    this.renderLabels(); 
-                    return;
-                }
-
-                choroContainer.style.display = 'block'; poliContainer.style.display = 'none'; 
-                const isPop = this.currentMode === 'population';
-                const validFeatures = this.currentFeatures.filter(d => (d.properties._population || 0) > 0);
-                let maxVal = 1;
-                if (validFeatures.length > 0) { maxVal = d3.max(validFeatures, d => isPop ? d.properties._population : (d.properties._population / d.properties._area_km2)); }
-
-                const interpolator = isPop ? d3.interpolateBlues : d3.interpolateYlOrRd;
-                const colorScale = d3.scaleSequentialPow(interpolator).exponent(0.3).domain([0, maxVal]);
-                
-                legendBar.style.background = `linear-gradient(to right, ${interpolator(0)}, ${interpolator(0.25)}, ${interpolator(0.5)}, ${interpolator(0.75)}, ${interpolator(1)})`;
-                document.getElementById('choro-max').textContent = isPop ? (maxVal/1000000).toFixed(1) + "M" : maxVal.toFixed(0) + " ab/km²";
-
-                if (this.gBase) {
-                    this.gBase.selectAll(".area").transition().duration(200)
-                        .attr("fill", d => {
-                            const pop = d.properties._population || 0; if (pop === 0) return defaultLandHex; 
-                            return colorScale(isPop ? pop : (pop / d.properties._area_km2));
-                        });
-                }
-                
-                this.renderLabels(); 
-            }
-
-            generatePoliticalLegend() {
-                const legendList = document.getElementById('political-legend-list'); legendList.innerHTML = '';
-                const factionMap = new Map(); 
-                this.currentFeatures.forEach(d => {
-                     const col = d.properties._factionColor; const facName = d.properties._factionName;
-                     if (col && col.toLowerCase() !== defaultLandHex.toLowerCase() && facName) { if (!factionMap.has(col)) { factionMap.set(col, facName); } }
-                });
-                document.getElementById('political-legend-count').textContent = factionMap.size;
-                Array.from(factionMap.entries()).sort((a, b) => a[1].localeCompare(b[1])).forEach(([color, name]) => {
-                    const item = document.createElement('div'); item.className = 'poli-legend-item';
-                    item.innerHTML = `<div class="poli-color-box" style="background: ${color};"></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight: bold;">${name}</span>`;
-                    item.addEventListener('click', () => { this.pickColor(color); document.getElementById('factionNameInput').value = name; });
-                    legendList.appendChild(item);
-                });
-            }
-
-            initSearch() {
-                const sInput = document.getElementById('searchInput'); const sResults = document.getElementById('searchResults');
-                sInput.addEventListener('input', e => {
-                    const val = e.target.value.toLowerCase().trim(); sResults.innerHTML = '';
-                    if (val.length < 2) { sResults.style.display = 'none'; return; }
-                    const matchedNations = new Set(); const matchedRegions = [];
-                    this.currentFeatures.forEach(d => {
-                        const name = (d.properties.name || d.properties.NAME || d.properties.reg_name || "").toLowerCase();
-                        const admin = (d.properties.admin || d.properties.admin0 || "").toLowerCase();
-                        if (admin.includes(val) && admin !== "") matchedNations.add(d.properties.admin || d.properties.admin0);
-                        if (name.includes(val)) matchedRegions.push(d);
-                    });
-                    let hasResults = false;
-                    if (matchedNations.size > 0) {
-                        hasResults = true;
-                        const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Nazioni Intere'; sResults.appendChild(catTitle);
-                        Array.from(matchedNations).slice(0, 5).forEach(nation => {
-                            const div = document.createElement('div'); div.className = 'search-item'; div.innerHTML = `<b>${nation}</b> <span>Colora Tutto</span>`;
-                            div.addEventListener('click', () => { this.colorAndZoomNation(nation); sInput.value = ''; sResults.style.display = 'none'; }); sResults.appendChild(div);
-                        });
-                    }
-                    if (matchedRegions.length > 0) {
-                        hasResults = true;
-                        const catTitle = document.createElement('div'); catTitle.className = 'search-category'; catTitle.textContent = 'Singole Aree'; sResults.appendChild(catTitle);
-                        matchedRegions.slice(0, 10).forEach(d => {
-                            const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area";
-                            const div = document.createElement('div'); div.className = 'search-item'; div.innerHTML = `${areaName} <span>${d.properties.admin || ""}</span>`;
-                            div.addEventListener('click', () => { this.selectAndInspect(d); this.zoomToFeature(d); sInput.value = ''; sResults.style.display = 'none'; }); sResults.appendChild(div);
-                        });
-                    }
-                    sResults.style.display = hasResults ? 'block' : 'none';
-                });
-            }
-
-            colorAndZoomNation(nationName) {
-                let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
-                if (this.currentColor.toLowerCase() !== defaultLandHex.toLowerCase()) {
-                    this.currentFeatures.forEach(f => { if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) { f.properties._factionName = targetName; } });
-                }
-                this.currentFeatures.forEach((d, i) => {
-                    if (d.properties.admin === nationName || d.properties.admin0 === nationName) {
-                        if(this.currentColor.toLowerCase() === defaultLandHex.toLowerCase()) { d.properties._factionColor = defaultLandHex; delete d.properties._factionName; } 
-                        else { d.properties._factionColor = this.currentColor; d.properties._factionName = targetName; }
-                        if(this.currentMode === 'political' && this.gBase) { this.gBase.select("#path-" + i).attr("fill", d.properties._factionColor); }
-                    }
-                });
-                
-                this.generatePoliticalLegend(); if(this.currentMode === 'political') this.updateViewMode();
-
-                if (!this.is3D) {
-                    const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
-                    if (matchingFeatures.length > 0 && this.currentPathGenerator) {
-                        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                        matchingFeatures.forEach(d => {
-                            const b = this.currentPathGenerator.bounds(d);
-                            if (b[0][0] < minX) minX = b[0][0]; if (b[0][1] < minY) minY = b[0][1];
-                            if (b[1][0] > maxX) maxX = b[1][0]; if (b[1][1] > maxY) maxY = b[1][1];
-                        });
-                        const dx = maxX - minX, dy = maxY - minY, x = (minX + maxX) / 2, y = (minY + maxY) / 2;
-                        const scale = Math.max(1, Math.min(40, 0.8 / Math.max(dx / this.width, dy / this.height)));
-                        this.svg.transition().duration(800).call(this.zoom2D.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
-                    }
-                } else {
-                    // Se in 3D, ruota il globo verso la nazione cercata!
-                    const matchingFeatures = this.currentFeatures.filter(d => (d.properties.admin === nationName || d.properties.admin0 === nationName));
-                    if (matchingFeatures.length > 0) {
-                        const targetD = matchingFeatures[0];
-                        const centroid = this.getBestCentroid(targetD);
-                        
-                        d3.transition().duration(800).tween("rotate", () => {
-                            const r = d3.interpolate(this.proj3D.rotate(), [-centroid[0], -centroid[1]]);
-                            return t => {
-                                this.proj3D.rotate(r(t));
-                                this.rotation = this.proj3D.rotate();
-                                this.updatePathsFast();
-                            };
-                        });
-                    }
-                }
-                
-                this.renderLabels();
-                this.pushState();
-            }
-
-            selectAndInspect(d) {
-                const i = this.currentFeatures.indexOf(d); this.selectedFeatureIndex = i;
-                document.getElementById('inspector-panel').style.display = 'block';
-                document.getElementById('insp-name').textContent = d.properties.name || d.properties.NAME || d.properties.reg_name || "Area Sconosciuta";
-                document.getElementById('insp-admin').textContent = d.properties.admin || d.properties.admin0 || "---";
-                document.getElementById('insp-area').textContent = d.properties._area_km2.toLocaleString('it-IT', {maximumFractionDigits:0}) + " km²";
-                
-                const pop = d.properties._population || 0; document.getElementById('insp-pop').value = pop > 0 ? pop : "";
-                const density = pop > 0 ? pop / d.properties._area_km2 : 0; document.getElementById('insp-density').textContent = density.toLocaleString('it-IT', {maximumFractionDigits:1});
-
-                if (this.currentColor.toLowerCase() === defaultLandHex.toLowerCase()) {
-                    d.properties._factionColor = defaultLandHex; delete d.properties._factionName;
-                } else {
-                    let targetName = document.getElementById('factionNameInput').value.trim() || "Nuovo Gruppo";
-                    this.currentFeatures.forEach(f => { if (f.properties._factionColor && f.properties._factionColor.toLowerCase() === this.currentColor.toLowerCase()) { f.properties._factionName = targetName; } });
-                    d.properties._factionColor = this.currentColor; d.properties._factionName = targetName;
-                }
-                
-                this.generatePoliticalLegend(); this.updateViewMode();
-                if(this.currentMode === 'political' && this.gBase) { this.gBase.select("#path-" + i).attr("fill", this.currentColor); }
-                
-                this.renderLabels();
-                this.pushState();
-            }
-
-            zoomToFeature(d) {
-                if (!this.is3D) {
-                    const b = this.currentPathGenerator.bounds(d), dx = b[1][0] - b[0][0], dy = b[1][1] - b[0][1], x = (b[0][0] + b[1][0]) / 2, y = (b[0][1] + b[1][1]) / 2;
-                    const scale = Math.max(1, Math.min(60, 0.5 / Math.max(dx / this.width, dy / this.height)));
-                    this.svg.transition().duration(800).call(this.zoom2D.transform, d3.zoomIdentity.translate(this.width / 2 - scale * x, this.height / 2 - scale * y).scale(scale));
-                } else {
-                    const centroid = this.getBestCentroid(d);
-                    d3.transition().duration(800).tween("rotate", () => {
-                        const r = d3.interpolate(this.proj3D.rotate(), [-centroid[0], -centroid[1]]);
-                        return t => {
-                            this.proj3D.rotate(r(t));
-                            this.rotation = this.proj3D.rotate();
-                            this.updatePathsFast();
-                        };
-                    });
-                }
-            }
-
-            generateState() {
-                const stateData = {};
-                this.currentFeatures.forEach((d, i) => { 
-                    if ((d.properties._factionColor && d.properties._factionColor !== defaultLandHex) || d.properties._population > 0) {
-                        stateData[i] = { c: d.properties._factionColor, f: d.properties._factionName, p: d.properties._population || 0 };
-                    } 
-                });
-                return { mapType: this.currentMapType, data: stateData };
-            }
-
-            applyState(state) {
-                this.currentFeatures.forEach((d, i) => {
-                    const saved = state.data[i];
-                    d.properties._factionColor = saved && saved.c ? saved.c : defaultLandHex;
-                    d.properties._factionName = saved && saved.f ? saved.f : undefined;
-                    d.properties._population = saved && saved.p ? saved.p : 0;
-                });
-                this.generatePoliticalLegend(); this.updateViewMode();
-                if (this.currentMode === 'political' && this.gBase) { this.gBase.selectAll(".area").attr("fill", d => d.properties._factionColor || defaultLandHex); }
-                this.renderLabels(); 
-            }
-
-            initZoom() {} // Il contenuto di initZoom è stato spostato nel nuovo setupInteractions()
-            
-            resize() { if(document.getElementById('editor-ui').style.display !== 'none') { this.width = this.container.node().getBoundingClientRect().width; this.height = this.container.node().getBoundingClientRect().height; } }
-
-            async loadMap(mapType) {
-                const config = AppManager.mapSources[mapType]; this.currentMapType = mapType; this.g.selectAll("*").remove(); 
-                document.getElementById("loading").style.display = "block";
-                
-                // Seleziona la 2D Base Projection in base alla mappa
-                if (mapType === 'usa') {
-                    this.proj2D = d3.geoAlbersUsa().fitSize([this.width - 20, this.height - 20], {type: "Sphere"});
-                    document.getElementById('toggle3DBtn').disabled = true;
-                    document.getElementById('toggle3DBtn').style.opacity = "0.3";
-                    if(this.is3D) { this.is3D = false; document.getElementById('toggle3DBtn').innerHTML = "🌍 ATTIVA GLOBO 3D"; }
-                } else {
-                    this.proj2D = d3.geoMercator();
-                    document.getElementById('toggle3DBtn').disabled = false;
-                    document.getElementById('toggle3DBtn').style.opacity = "1";
-                }
-
-                document.getElementById('inspector-panel').style.display = 'none'; document.getElementById('political-legend-list').innerHTML = ''; 
-                document.getElementById('political-legend-count').textContent = "0"; document.getElementById('searchInput').value = ''; 
-                document.getElementById('searchResults').style.display = 'none'; this.selectedFeatureIndex = null;
-
-                try {
-                    const [resMap, resRivers, resLakes] = await Promise.all([ fetch(config.url), fetch(URL_RIVERS), fetch(URL_LAKES) ]);
-                    let geoData = await resMap.json(); this.riversData = await resRivers.json(); this.lakesData = await resLakes.json();
-                    
-                    if (config.countryFilter) { geoData.features = geoData.features.filter(d => (d.properties.admin || d.properties.admin0 || d.properties.NAME || "") === config.countryFilter); } 
-                    else if (config.continent) {
-                        let validCountries = null;
-                        if (config.url === URL_REGIONS) {
-                            const admin0Res = await fetch(URL_COUNTRIES); const admin0Data = await admin0Res.json();
-                            validCountries = new Set(admin0Data.features.filter(f => config.continent.includes(f.properties.CONTINENT)).map(f => f.properties.ADMIN || f.properties.admin || f.properties.admin0));
-                        }
-                        geoData.features = geoData.features.filter(d => {
-                            let keep = false; const adminName = d.properties.admin || d.properties.admin0 || d.properties.NAME;
-                            if (validCountries) { keep = validCountries.has(adminName); } else { keep = config.continent.includes(d.properties.CONTINENT); }
-                            if (keep && config.url === URL_REGIONS) {
-                                const centroid = d3.geoCentroid(d); const lon = centroid[0]; const lat = centroid[1];
-                                if (adminName === "Russia") { if (config.continent.includes("Europe") && lon >= 60) keep = false; if (config.continent.includes("Asia") && lon < 60) keep = false; }
-                                if (adminName === "Turkey") { if (config.continent.includes("Europe") && lon >= 28) keep = false; if (config.continent.includes("Asia") && lon < 28) keep = false; }
-                                if (adminName === "France" || adminName === "Netherlands") { if (config.continent.includes("Europe") && (lon < -30 || lon > 40 || lat < 30)) keep = false; }
-                            }
-                            return keep;
-                        });
-                    }
-                    
-                    const uniqueAdmins = Array.from(new Set(geoData.features.map(d => d.properties.admin || d.properties.admin0 || d.properties.NAME || "N/A")));
-                    const colorMap = new Map(); const usedHex = new Set([defaultLandHex.toLowerCase()]); 
-                    uniqueAdmins.forEach((admin, index) => {
-                        let hue = (index * 137.508) % 360; let saturation = 65 + (index % 3) * 10; let lightness = 50 + (index % 4) * 10;  
-                        let hex = d3.color(`hsl(${hue}, ${saturation}%, ${lightness}%)`).formatHex().toLowerCase();
-                        let tweak = 0; while(usedHex.has(hex)) { tweak++; hue = (hue + tweak * 11) % 360; hex = d3.color(`hsl(${hue}, ${saturation}%, ${lightness}%)`).formatHex().toLowerCase(); }
-                        usedHex.add(hex); colorMap.set(admin, hex);
-                    });
-
-                    geoData.features.forEach(d => { 
-                        d.properties._area_km2 = this.calculateArea(d); 
-                        if (config.prefill) {
-                            d.properties._population = Math.max(0, d.properties.POP_EST || 0);
-                            const countryName = d.properties.admin || d.properties.NAME || d.properties.admin0 || d.properties.reg_name || "N/A";
-                            d.properties._factionColor = colorMap.get(countryName); d.properties._factionName = countryName; 
-                        } else { d.properties._population = 0; d.properties._factionColor = defaultLandHex; }
-                    });
-                    
-                    if (mapType !== 'usa') this.proj2D.fitSize([this.width - 20, this.height - 20], geoData);
-                    this.currentFeatures = geoData.features; this.drawMap(geoData);
-                    this.history = []; this.historyIndex = -1; this.pushState();
-
-                } catch (e) { AppManager.showToast("Errore di caricamento vettori.", true); console.error(e);}
-                document.getElementById("loading").style.display = "none";
-            }
-
-            drawMap(geoData) {
-                // Imposta la proiezione base in base allo switch
-                this.updateProjection();
-
-                this.g.selectAll("*").remove(); 
-                this.gBase = this.g.append("g").attr("class", "layer-base");
-                this.gRivers = this.g.append("g").attr("class", "layer-rivers");
-                this.gLakes = this.g.append("g").attr("class", "layer-lakes");
-                this.gLabels = this.g.append("g").attr("class", "layer-labels");
-
-                this.gBase.selectAll("path").data(geoData.features).enter().append("path").attr("class", "area").attr("id", (d,i) => "path-"+i)
-                    .attr("d", this.currentPathGenerator).attr("fill", defaultLandHex)
-                    .on("mouseover", (e, d) => {
-                        const areaName = d.properties.name || d.properties.NAME || d.properties.reg_name || "Sconosciuta";
-                        const adminName = d.properties.admin || d.properties.admin0 || "";
-                        let t = `<b style="display:block; margin-bottom:2px;">${areaName}</b>`;
-                        if (adminName) t += `<span style="color:var(--accent); font-size:10px; text-transform:uppercase;">${adminName}</span>`;
-                        if (d.properties._factionName) { t += `<div style="margin-top:4px; font-size:11px; color:#facc15; font-weight:bold;">● ${d.properties._factionName}</div>`; }
-                        const pop = d.properties._population || 0;
-                        if (pop > 0) { const dens = pop / d.properties._area_km2; t += `<hr style="border:0; border-top:1px solid var(--border-light); margin:6px 0;"><span style="font-size:11px; color:var(--success);">Pop: ${pop.toLocaleString()} | Dens: ${dens.toFixed(1)}</span>`; }
-                        this.tooltip.style("opacity", 1).html(t);
-                    })
-                    .on("mousemove", e => this.tooltip.style("left", (e.pageX + 15)+"px").style("top", (e.pageY - 15)+"px"))
-                    .on("mouseout", () => this.tooltip.style("opacity", 0))
-                    .on("click", (e, d) => { this.selectAndInspect(d); });
-                
-                if (this.riversData && this.riversData.features) { this.gRivers.selectAll("path").data(this.riversData.features).enter().append("path").attr("d", this.currentPathGenerator).attr("class", "river"); }
-                if (this.lakesData && this.lakesData.features) { this.gLakes.selectAll("path").data(this.lakesData.features).enter().append("path").attr("d", this.currentPathGenerator).attr("class", "lake"); }
-                
-                this.gRivers.style("display", this.showWater ? "block" : "none");
-                this.gLakes.style("display", this.showWater ? "block" : "none");
-
-                this.generatePoliticalLegend(); this.updateViewMode(); this.renderLabels();
-            }
-        }
-
-        const editor = new GISMapEditor(); AppManager.refreshSlots();
-
-        document.getElementById('btnStartNew').addEventListener('click', () => { AppManager.goToEditor(document.getElementById('startMapSelector').value, null, 'slot_1'); });
-        document.getElementById('btnLoadLocal').addEventListener('click', () => {
-            const slotValue = document.getElementById('menuSaveSlot').value; const slotId = slotValue.replace('slot_', '');
-            const data = localStorage.getItem(`mapchart_pro_final_v3_${slotId}`);
-            if (data) { AppManager.goToEditor(JSON.parse(data).mapType, JSON.parse(data), slotValue); } else { AppManager.showToast("Slot vuoto", true); }
-        });
-        document.getElementById('btnImportProject').addEventListener('click', () => {
-            const fileInput = document.getElementById('importProjectFile'); if (!fileInput.files.length) { AppManager.showToast("Seleziona file!", true); return; }
-            const reader = new FileReader();
-            reader.onload = (e) => { try { const stateData = JSON.parse(e.target.result); if (!stateData.mapType) throw new Error(); AppManager.goToEditor(stateData.mapType, stateData, 'slot_1'); } catch (err) { AppManager.showToast("File JSON corrotto.", true); } };
-            reader.readAsText(fileInput.files[0]);
-        });
-    </script>
+    <script type="module" src="./js/main.js"></script>
 </body>
 </html>
