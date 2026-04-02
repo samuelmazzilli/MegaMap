@@ -2,183 +2,547 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MegaMap PRO - V36.1 Enterprise</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MegaMap - V26.04.02.16.14</title>
     
-    <script>
-        if (window.location.protocol === 'file:') {
-            document.addEventListener("DOMContentLoaded", () => {
-                document.body.innerHTML = `
-                    <div style="background:#0f172a; color:white; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif; text-align:center; padding: 20px;">
-                        <h1 style="color:#ef4444; font-size:3rem; margin-bottom:10px;">⚠️ BLOCCO CORS DEL BROWSER</h1>
-                        <p style="font-size:1.2rem; max-width:700px; line-height:1.6;">
-                            Hai aperto il file tramite doppio click (protocollo <i>file:///</i>).<br>
-                            Per motivi di sicurezza, i browser bloccano l'esecuzione di architetture a moduli multipli (ES6) in locale.<br><br>
-                            <b>COME RISOLVERE:</b> Apri la cartella con <i>VS Code</i>, installa l'estensione <b>Live Server</b> e avvia il file cliccando su <i>"Open with Live Server"</i>.
-                        </p>
-                    </div>`;
-            });
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        :root { --bg: #000000; --land-empty: #2a2b2f; --accent: #3b82f6; --glass: rgba(10, 10, 15, 0.98); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #fff; overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
+        
+        .glass { background: var(--glass); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); }
+
+        /* AREA GEOGRAFICA */
+        .titan-poly { 
+            stroke-width: 0.1px; stroke: rgba(0,0,0,0.5); 
+            transition: fill 0.15s ease, stroke 0.2s; stroke-linejoin: round; cursor: crosshair;
+            vector-effect: non-scaling-stroke;
         }
-    </script>
+        .titan-poly:hover { stroke: #fff; stroke-width: 0.5px; filter: brightness(1.4); }
+        .titan-poly.selected { stroke: var(--accent); stroke-width: 2px; filter: drop-shadow(0 0 10px var(--accent)); z-index: 50; }
+
+        #map-container { width: 100%; height: 100%; position: absolute; inset: 0; background: #000; }
+        svg { width: 100%; height: 100%; display: block; touch-action: none; }
+
+        /* GLOBE DECOR */
+        .globe-bg { fill: #000000; pointer-events: none; }
+        .globe-outline { fill: none; stroke: rgba(59, 130, 246, 0.2); stroke-width: 1px; pointer-events: none; }
+
+        /* LEGENDA / INDICE */
+        #legend {
+            position: fixed; bottom: 2rem; left: 2rem; z-index: 2000;
+            padding: 1.2rem; border-radius: 1.5rem; display: none;
+            width: 240px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .legend-gradient { height: 12px; width: 100%; border-radius: 6px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.1); }
+
+        /* INFO BOX */
+        #info-box {
+            position: fixed; z-index: 2000;
+            top: 4.5rem; right: 0.8rem; left: 0.8rem;
+            opacity: 0; transform: translateY(-15px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none; border-radius: 1.2rem; padding: 1rem;
+            border-right: 4px solid var(--accent);
+        }
+        @media (min-width: 768px) { #info-box { width: 320px; left: auto; top: 1.5rem; right: 1.5rem; border-right-width: 6px; } }
+        #info-box.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        /* SIDEBAR */
+        #sidebar {
+            position: fixed; left: 0; top: 0; height: 100%; z-index: 3000;
+            width: 100%; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 2rem; display: flex; flex-direction: column; 
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+        @media (min-width: 768px) { #sidebar { width: 440px; } }
+        .sidebar-closed #sidebar { transform: translateX(-100%); }
+
+        /* MODAL */
+        #edit-modal {
+            position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.9);
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px);
+        }
+        #edit-modal.active { display: flex; }
+
+        .btn-titan {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            font-weight: 800; text-transform: uppercase; font-size: 9px;
+            transition: all 0.2s; color: #94a3b8; cursor: pointer; padding: 0.8rem;
+        }
+        .btn-titan.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn-tool.active { background: #fbbf24 !important; color: #000 !important; border-color: #fbbf24 !important; }
+
+        #faction-list { flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 200px; }
+        .faction-card {
+            padding: 0.8rem; border-radius: 1.2rem; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05); font-size: 11px; font-weight: 900;
+            margin-bottom: 0.5rem; transition: 0.2s; cursor: pointer;
+        }
+        .faction-card:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
+
+        .boot-loader { position: fixed; inset: 0; z-index: 99999; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .custom-scroll::-webkit-scrollbar { width: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.4); border-radius: 10px; }
+    </style>
 </head>
-<body>
+<body class="sidebar-closed">
 
-    <button id="menu-toggle-btn" style="display: none;" title="Menu Strumenti">☰</button>
+    <!-- LOADER -->
+    <div id="boot-loader" class="boot-loader">
+        <div class="w-14 h-14 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-[9px] font-black tracking-widest uppercase text-blue-500 animate-pulse">Sincronizzazione Unità Nazionali...</p>
+    </div>
 
-    <div id="main-menu">
-        <h1 class="menu-title">MegaMap PRO</h1>
-        <p class="menu-subtitle">Modular Tactical Engine V36.1</p>
-        <div class="menu-grid">
-            <div class="menu-card">
-                <h2>Nuovo Progetto</h2>
-                <select id="startMapSelector" class="custom-input">
-                    <optgroup label="🌍 Mappe Globali">
-                        <option value="world_complete">Mondo Completo (Alta Res)</option>
-                        <option value="world_countries">Mondo (Solo Nazioni)</option>
-                        <option value="world_regions">Mondo (Solo Regioni)</option>
-                    </optgroup>
-                    <optgroup label="🇪🇺 Europa">
-                        <option value="eu_countries">Europa (Nazioni)</option>
-                        <option value="eu_regions">Europa (Regioni)</option>
-                    </optgroup>
-                    <optgroup label="🌏 Asia">
-                        <option value="as_countries">Asia (Nazioni)</option>
-                        <option value="as_regions">Asia (Regioni)</option>
-                    </optgroup>
-                    <optgroup label="🌎 Americhe">
-                        <option value="am_countries">Americhe (Nazioni)</option>
-                        <option value="am_regions">Americhe (Regioni)</option>
-                    </optgroup>
-                    <optgroup label="🌍 Africa">
-                        <option value="af_countries">Africa (Nazioni)</option>
-                        <option value="af_regions">Africa (Regioni)</option>
-                    </optgroup>
-                    <optgroup label="📌 Focus Nazionali">
-                        <option value="italy">Italia (Regioni)</option>
-                        <option value="usa">USA (Stati)</option>
-                    </optgroup>
-                </select>
-                <button class="btn btn-primary" id="btnStartNew">Avvia Workspace</button>
-            </div>
-            <div class="menu-card">
-                <h2>Memoria Locale</h2>
-                <select id="menuSaveSlot" class="custom-input">
-                    <option value="slot_1">Slot 1: Vuoto</option>
-                    <option value="slot_2">Slot 2: Vuoto</option>
-                    <option value="slot_3">Slot 3: Vuoto</option>
-                </select>
-                <button class="btn btn-success" id="btnLoadLocal">Carica ed Entra</button>
-            </div>
-            <div class="menu-card">
-                <h2>Importa Progetto</h2>
-                <div class="file-upload-wrapper">
-                    <input type="file" id="importProjectFile" accept=".json" class="file-upload-input">
-                    <div class="file-upload-btn">Sfoglia JSON</div>
-                    <div id="fileNameDisplay" class="file-name-display">Nessun file...</div>
+    <!-- MODAL EDIT -->
+    <div id="edit-modal">
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-sm border border-white/10 shadow-2xl">
+            <h3 class="text-2xl font-black italic mb-6 uppercase text-blue-500">Edit Egemone</h3>
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] font-black opacity-30 uppercase block mb-1">Nome Dominio</label>
+                    <input type="text" id="modal-name-input" class="w-full bg-black/60 border border-white/10 rounded-xl p-4 text-white font-black outline-none focus:border-blue-500">
                 </div>
-                <button class="btn btn-primary" id="btnImportProject" style="background: var(--text-muted); margin-top:10px;">Carica Progetto</button>
+                <div>
+                    <label class="text-[10px] font-black opacity-30 uppercase block mb-1">Colore</label>
+                    <input type="color" id="modal-color-input" class="w-full h-14 rounded-xl cursor-pointer bg-transparent border-none">
+                </div>
+                <div class="flex gap-4 pt-2">
+                    <button onclick="titan.closeModal()" class="flex-grow py-4 rounded-xl bg-white/5 font-black text-[10px] uppercase">Annulla</button>
+                    <button onclick="titan.saveModal()" class="flex-grow py-4 rounded-xl bg-blue-600 font-black text-[10px] uppercase">Applica</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="editor-ui">
-        <div id="sidebar">
-            <div class="header">
-                <h1>MegaMap PRO</h1>
-                <p id="currentMapDisplay">Mappa Attiva</p>
+    <!-- LEGENDA DINAMICA -->
+    <div id="legend" class="glass shadow-2xl">
+        <h5 id="legend-label" class="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">Analisi</h5>
+        <p id="legend-desc" class="text-[10px] font-bold text-white mb-3">-</p>
+        <div id="legend-bar" class="legend-gradient"></div>
+        <div class="flex justify-between text-[9px] font-black text-white/60 uppercase">
+            <span id="val-min">Min</span>
+            <span id="val-max">Max</span>
+        </div>
+    </div>
+
+    <!-- INFO BOX -->
+    <div id="info-box" class="glass shadow-2xl">
+        <h4 id="info-name" class="font-black text-xl italic text-white mb-1 uppercase truncate">-</h4>
+        <div class="grid grid-cols-2 gap-2 mt-3">
+            <div class="bg-black/60 p-2 rounded-xl border border-white/5">
+                <span class="text-[7px] block font-black uppercase opacity-40 mb-1">Popolazione</span>
+                <input type="number" id="edit-pop-input" class="bg-transparent border-none p-0 text-blue-400 font-black text-sm w-full outline-none" oninput="titan.updateLocalPop()">
             </div>
-            <div class="tools">
+            <div class="bg-black/60 p-2 rounded-xl border border-white/5 flex flex-col justify-center">
+                <span class="text-[7px] block font-black uppercase opacity-40 mb-1">Densità (/km²)</span>
+                <span id="info-dens" class="text-xs font-black text-white">0</span>
+            </div>
+        </div>
+        <div class="mt-2 flex justify-between items-center bg-black/40 p-2 rounded-xl">
+            <span class="text-[7px] font-black uppercase opacity-40">Egemone</span>
+            <span id="info-faction" class="text-[10px] font-black text-blue-400">Terra di Nessuno</span>
+        </div>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div id="main-menu" class="fixed inset-0 z-[9000] bg-black flex flex-col items-center justify-center p-8 text-center">
+        <div class="mb-12">
+            <h1 class="text-7xl sm:text-[11rem] font-black italic tracking-tighter mb-2 leading-none uppercase">Titan <span class="text-blue-600">GIS</span></h1>
+            <p class="text-blue-400 font-bold tracking-[0.5em] sm:tracking-[2em] uppercase text-[10px] sm:text-[14px] opacity-40">V107.73 | SOVEREIGN EFFICIENCY</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+            <div class="glass p-12 rounded-[2.5rem] group cursor-pointer hover:scale-[1.02] transition-all" onclick="titan.boot('world')">
+                <i class="fa-solid fa-earth-americas text-5xl text-blue-600 mb-8 opacity-20 group-hover:opacity-100 transition-opacity"></i>
+                <button class="w-full py-5 rounded-2xl bg-blue-600 font-black text-[10px] tracking-widest uppercase shadow-xl">World Boot (Complete)</button>
+            </div>
+            <div class="glass p-12 rounded-[2.5rem] group cursor-pointer hover:scale-[1.02] transition-all" onclick="titan.boot('continent')">
+                <i class="fa-solid fa-satellite-dish text-5xl text-blue-600 mb-8 opacity-20 group-hover:opacity-100 transition-opacity"></i>
+                <select id="sector-select" class="w-full bg-black border border-white/10 p-5 rounded-2xl text-[10px] font-black uppercase text-white mb-4 outline-none appearance-none cursor-pointer" onclick="event.stopPropagation()">
+                    <option value="Europe">Europa (Vuota)</option>
+                    <option value="Americas">Americhe (Vuota)</option>
+                    <option value="Asia">Asia (Vuota)</option>
+                    <option value="Africa">Africa (Vuota)</option>
+                    <option value="Oceania">Oceania (Vuota)</option>
+                </select>
+                <button class="w-full py-5 rounded-2xl bg-white/10 font-black text-[10px] tracking-widest uppercase">Sector Boot (Nations Only)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI -->
+    <div id="editor-ui" class="hidden">
+        <div id="sidebar" class="glass shadow-2xl">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="font-black text-xl sm:text-3xl italic tracking-tighter text-white uppercase text-blue-600">Titan <span class="text-white">GIS</span></h2>
+                <button onclick="titan.toggleSidebar(false)" class="text-4xl opacity-20 hover:opacity-100 text-white">&times;</button>
+            </div>
+
+            <!-- DESIGNER -->
+            <div class="mb-4 p-6 rounded-[2rem] bg-white/5 border border-white/10">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-16 h-16 rounded-2xl border-4 border-white/10 overflow-hidden relative shadow-lg" id="active-orb" style="background: #3b82f6;">
+                        <input type="color" id="input-color" value="#3b82f6" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" oninput="titan.updateOrb(this.value)">
+                    </div>
+                    <div class="flex-grow">
+                        <label class="text-[9px] font-black uppercase opacity-30 tracking-widest block mb-1">Dominio Attivo</label>
+                        <input type="text" id="input-name" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white font-black text-xs outline-none focus:border-blue-500" value="Nuovo Impero">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="tool-dropper" onclick="titan.toggleTool('dropper')" class="btn-titan rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-eye-dropper"></i> Clona</button>
+                    <button id="tool-brush" onclick="titan.toggleTool('brush')" class="btn-titan rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-paintbrush"></i> Pennello</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-1 mb-4">
+                <button id="m-political" onclick="titan.setMode('political')" class="btn-titan rounded-xl active">Politica</button>
+                <button id="m-density" onclick="titan.setMode('density')" class="btn-titan rounded-xl">Densità</button>
+                <button id="m-population" onclick="titan.setMode('population')" class="btn-titan rounded-xl">Popoli</button>
+            </div>
+
+            <div id="proj-container" class="mb-6 flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                <span class="text-[9px] font-black uppercase opacity-40 tracking-widest">Vista</span>
+                <button onclick="titan.toggleProjection()" id="proj-btn" class="px-4 py-1 bg-blue-600 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-lg">3D GLOBO</button>
+            </div>
+
+            <div class="relative mb-3">
+                <input type="text" id="f-search" class="bg-black/60 border border-white/15 rounded-xl p-3 w-full text-xs font-bold outline-none pr-10 text-white" placeholder="Cerca Egemone..." oninput="titan.renderList()">
+                <i class="fa-solid fa-search absolute right-4 top-1/2 -translate-y-1/2 opacity-20 text-xs"></i>
+            </div>
+
+            <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2 italic">Registro Imperiale</p>
+            <div id="faction-list" class="custom-scroll space-y-1"></div>
+
+            <div class="mt-4 pt-4 border-t border-white/10">
+                <button onclick="location.reload()" class="w-full py-3 bg-red-900/20 border border-red-500/30 text-red-500 font-black rounded-xl text-[8px] uppercase tracking-widest"><i class="fa-solid fa-power-off mr-2"></i> QUIT</button>
+            </div>
+        </div>
+
+        <div class="fixed bottom-6 right-6 flex flex-col gap-2 z-[2500]">
+            <button onclick="titan.zoom(2)" class="w-12 h-12 rounded-xl glass flex items-center justify-center text-xl border-white/10 border text-white shadow-2xl">+</button>
+            <button onclick="titan.zoom(0.5)" class="w-12 h-12 rounded-xl glass flex items-center justify-center text-xl border-white/10 border text-white shadow-2xl">-</button>
+        </div>
+
+        <button onclick="titan.toggleSidebar(true)" class="fixed top-4 left-4 z-[2500] bg-white/5 backdrop-blur-3xl w-12 h-12 rounded-xl flex items-center justify-center border border-white/10 shadow-2xl">
+            <i class="fa-solid fa-bars-staggered text-white text-sm"></i>
+        </button>
+
+        <div id="map-container"><svg id="view-svg"></svg></div>
+    </div>
+
+    <script>
+        class TitanEngine {
+            constructor() {
+                this.svg = d3.select("#view-svg");
+                this.gBg = this.svg.append("g").attr("id", "layer-bg");
+                this.gData = this.svg.append("g").attr("id", "layer-data");
                 
-                <div class="control-group">
-                    <label>Vista & Rendering</label>
-                    <div class="mode-toggle">
-                        <button class="mode-btn active" data-mode="political">Politica</button>
-                        <button class="mode-btn" data-mode="population">Pop</button>
-                        <button class="mode-btn" data-mode="density">Densità</button>
-                    </div>
-                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                        <button class="btn" id="toggleWaterBtn" style="flex:1;">💧 Acqua: ON</button>
-                        <button class="btn" id="toggleLabelsBtn" style="flex:1;">🔤 Testi: OFF</button>
-                    </div>
-                    <button class="btn-3d" id="toggle3DBtn">🌍 ATTIVA GLOBO 3D</button>
-                    <button class="btn" id="toggleSpinBtn" style="display: none; width: 100%; margin-top: 5px; border: 1px solid var(--danger); color: var(--danger);">⏸️ FERMA ROTAZIONE</button>
+                this.proj3d = d3.geoOrthographic().precision(0.01).clipAngle(90);
+                this.proj2d = d3.geoEquirectangular().precision(0.01); 
+                
+                this.currentProj = this.proj3d;
+                this.pathGen = d3.geoPath().projection(this.currentProj);
+                this.data = []; this.mode = 'political'; this.activeTool = null;
+                this.isMouseDown = false; this.selectedAreaId = null;
+                this.editingFaction = null;
+                this.setupControls();
+            }
 
-                    <div id="choropleth-legend-container" style="display:none; margin-top: 10px;">
-                        <div id="choropleth-bar" style="height: 10px; border-radius: 2px;"></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">
-                            <span id="choro-min">0</span><span id="choro-max">Max</span>
+            setupControls() {
+                const drag = d3.drag().on("drag", (e) => {
+                    if (this.currentProj === this.proj3d) {
+                        const r = this.proj3d.rotate();
+                        const k = 70 / this.proj3d.scale();
+                        this.proj3d.rotate([r[0] + e.dx * k, r[1] - e.dy * k]);
+                    } else {
+                        const t = d3.zoomTransform(this.svg.node());
+                        this.svg.call(this.zoomHandler.translateBy, e.dx/t.k, e.dy/t.k);
+                    }
+                    this.render();
+                });
+                this.svg.call(drag);
+
+                this.zoomHandler = d3.zoom().scaleExtent([0.1, 150000]).on("zoom", (e) => {
+                    if (this.currentProj === this.proj2d) this.gData.attr("transform", e.transform);
+                    else this.currentProj.scale(this.baseScale * e.transform.k);
+                    this.render();
+                });
+                this.svg.call(this.zoomHandler).on("dblclick.zoom", null);
+                window.addEventListener('mousedown', () => this.isMouseDown = true);
+                window.addEventListener('mouseup', () => this.isMouseDown = false);
+                window.addEventListener('resize', () => this.handleResize());
+            }
+
+            zoom(f) { this.svg.transition().duration(400).call(this.zoomHandler.scaleBy, f); }
+
+            handleResize() {
+                const b = document.getElementById('map-container').getBoundingClientRect();
+                if(b.width === 0) return;
+                this.w = b.width; this.h = b.height;
+                this.baseScale = Math.min(this.w, this.h) / 2.2;
+                this.currentProj.translate([this.w/2, this.h/2]).scale(this.baseScale);
+                this.render();
+            }
+
+            formatNumber(n) {
+                if (n >= 1e9) return (n / 1e9).toFixed(1) + "B";
+                if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
+                if (n >= 1e3) return (n / 1e3).toFixed(0) + "K";
+                return Math.round(n).toString();
+            }
+
+            updateOrb(c) { document.getElementById('active-orb').style.background = c; }
+
+            async boot(mode) {
+                const loader = document.getElementById('boot-loader');
+                loader.style.display = 'flex';
+                
+                try {
+                    this.gData.selectAll("*").remove();
+                    this.data = [];
+
+                    // SEMPRE USARE LE NAZIONI PER MASSIMA VELOCITÀ
+                    const url = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json";
+                    const res = await fetch(url);
+                    const topo = await res.json();
+                    let features = topojson.feature(topo, topo.objects.countries).features;
+
+                    // Blacklist Maldive Purge
+                    features = features.filter(f => !["Maldives", "Tunisia", "French Guiana"].includes(f.properties.name));
+
+                    if(mode === 'continent') {
+                        const sector = document.getElementById('sector-select').value;
+                        const bounds = {
+                            "Europe": {x: [-15, 45], y: [35, 72]},
+                            "Americas": {x: [-170, -32], y: [-60, 80]},
+                            "Asia": {x: [35, 185], y: [-15, 78]},
+                            "Africa": {x: [-24, 55], y: [-38, 38]},
+                            "Oceania": {x: [110, 185], y: [-52, 0]}
+                        }[sector];
+                        features = features.filter(f => {
+                            const c = d3.geoCentroid(f);
+                            return c[0] >= bounds.x[0] && c[0] <= bounds.x[1] && c[1] >= bounds.y[0] && c[1] <= bounds.y[1];
+                        });
+                        this.currentProj = this.proj2d;
+                        document.getElementById('proj-btn').textContent = "Visuale 2D";
+                    } else {
+                        this.currentProj = this.proj3d;
+                        document.getElementById('proj-btn').textContent = "3D GLOBO";
+                    }
+
+                    const bootId = Math.random().toString(36).substr(7);
+                    this.data = features.map((f, i) => {
+                        const name = f.properties.name || `Region-${f.id}`;
+                        let geom = JSON.parse(JSON.stringify(f.geometry)); 
+                        // Fix Winding Order
+                        if (d3.geoArea({type: "Feature", geometry: geom}) > 2.0) {
+                            if (geom.type === "Polygon") geom.coordinates = geom.coordinates.map(r => r.reverse());
+                            else if (geom.type === "MultiPolygon") geom.coordinates = geom.coordinates.map(p => p.map(r => r.reverse()));
+                        }
+                        const area = Math.max(1, d3.geoArea({type: "Feature", geometry: geom}) * 6371 * 6371);
+                        return { 
+                            type: "Feature", geometry: geom,
+                            properties: {
+                                id: `T-${bootId}-${i}`, name, 
+                                faction: mode === 'world' ? name : "", 
+                                pop: area * (Math.random() * 120 + 30), area: area, 
+                                color: mode === 'world' ? d3.hsl((i * 131) % 360, 0.8, 0.55).formatHex() : "transparent",
+                                centroid: d3.geoCentroid({type: "Feature", geometry: geom})
+                            }
+                        };
+                    });
+
+                    document.getElementById('main-menu').classList.add('hidden');
+                    document.getElementById('editor-ui').classList.remove('hidden');
+                    this.pathGen = d3.geoPath().projection(this.currentProj);
+                    this.handleResize();
+                    this.render(); 
+                    this.renderList(); 
+                } catch(e) { console.error("Boot Error", e); }
+                loader.style.display = 'none';
+            }
+
+            toggleProjection() {
+                const was3d = this.currentProj === this.proj3d;
+                this.currentProj = was3d ? this.proj2d : this.proj3d;
+                document.getElementById('proj-btn').textContent = was3d ? "Visuale 2D" : "3D GLOBO";
+                this.pathGen = d3.geoPath().projection(this.currentProj);
+                if (this.currentProj === this.proj3d) this.currentProj.clipAngle(90);
+                else this.currentProj.clipAngle(null);
+                this.svg.call(this.zoomHandler.transform, d3.zoomIdentity);
+                this.gData.attr("transform", null);
+                this.render();
+            }
+
+            render() {
+                this.gBg.selectAll(".globe-bg").data(this.currentProj === this.proj3d ? [null] : []).join("path")
+                    .attr("class", "globe-bg globe-ocean").attr("d", this.pathGen({type: "Sphere"}));
+
+                let renderData = this.data;
+                if (this.currentProj === this.proj3d) {
+                    const r = this.currentProj.rotate();
+                    const center = [-r[0], -r[1]];
+                    renderData = this.data.filter(d => d3.geoDistance(d.properties.centroid, center) < 1.7);
+                }
+
+                const bound = this.gData.selectAll(".titan-poly").data(renderData, d => d.properties.id);
+                
+                bound.enter().append("path").attr("class", "titan-poly")
+                    .on("mousedown", (e, d) => this.handleAction(d))
+                    .on("mouseenter", (e, d) => { if(this.activeTool === 'brush' && this.isMouseDown) this.applyBrush(d); })
+                    .merge(bound).attr("d", this.pathGen)
+                    .style("fill", d => this.getFill(d))
+                    .classed("selected", d => this.selectedAreaId === d.properties.id);
+                
+                bound.exit().remove();
+                this.updateLegend();
+            }
+
+            getFill(d) {
+                const p = d.properties;
+                if (!p.faction) return "#2a2b2f";
+                if (this.mode === 'political') return p.color;
+
+                const isDens = this.mode === 'density';
+                const val = isDens ? (p.pop / p.area) : p.pop;
+                const active = this.data.filter(x => x.properties.faction);
+                const ext = d3.extent(active, x => isDens ? (x.properties.pop/x.properties.area) : x.properties.pop);
+                
+                const scale = d3.scaleSequentialLog(isDens ? d3.interpolateYlOrRd : d3.interpolateViridis)
+                                .domain([Math.max(0.1, ext[0]), ext[1]]).clamp(true);
+                return scale(val);
+            }
+
+            updateLegend() {
+                const legend = document.getElementById('legend');
+                if (this.mode === 'political') { legend.style.display = 'none'; return; }
+                legend.style.display = 'block';
+                const isDens = this.mode === 'density';
+                document.getElementById('legend-label').textContent = isDens ? "Indice Densità" : "Indice Popoli";
+                document.getElementById('legend-desc').textContent = isDens ? "Abitanti / Km²" : "Totale Abitanti";
+                document.getElementById('legend-bar').style.background = isDens 
+                    ? "linear-gradient(to right, #ffffcc, #fd8d3c, #800026)"
+                    : "linear-gradient(to right, #440154, #21908d, #fde725)";
+                const active = this.data.filter(x => x.properties.faction);
+                if (active.length) {
+                    const ext = d3.extent(active, x => isDens ? (x.properties.pop/x.properties.area) : x.properties.pop);
+                    document.getElementById('val-min').textContent = isDens ? ext[0].toFixed(1) : this.formatNumber(ext[0]);
+                    document.getElementById('val-max').textContent = isDens ? ext[1].toFixed(1) : this.formatNumber(ext[1]);
+                }
+            }
+
+            handleAction(d) {
+                if(this.activeTool === 'dropper') {
+                    if(d.properties.faction) {
+                        document.getElementById('input-name').value = d.properties.faction;
+                        document.getElementById('input-color').value = d.properties.color;
+                        this.updateOrb(d.properties.color);
+                    }
+                    this.toggleTool(null);
+                } else if(this.activeTool === 'brush') this.applyBrush(d);
+                else { this.selectedAreaId = d.properties.id; this.showInfoBox(d); this.render(); }
+            }
+
+            showInfoBox(d) {
+                const p = d.properties;
+                document.getElementById('info-name').textContent = p.name;
+                document.getElementById('info-faction').textContent = p.faction || "Terra di Nessuno";
+                document.getElementById('info-faction').style.color = p.faction ? p.color : "#94a3b8";
+                document.getElementById('edit-pop-input').value = Math.round(p.pop);
+                document.getElementById('info-dens').textContent = (p.pop/p.area).toFixed(2);
+                document.getElementById('info-box').classList.add('active');
+            }
+
+            updateLocalPop() {
+                if(!this.selectedAreaId) return;
+                const v = parseFloat(document.getElementById('edit-pop-input').value) || 0;
+                const t = this.data.find(d => d.properties.id === this.selectedAreaId);
+                if(t) { t.properties.pop = v; this.render(); this.renderList(); }
+            }
+
+            applyBrush(d) {
+                d.properties.color = document.getElementById('input-color').value;
+                d.properties.faction = document.getElementById('input-name').value;
+                this.render();
+                this.renderList();
+            }
+
+            openEditModal(fName, fColor) {
+                this.editingFaction = fName;
+                document.getElementById('modal-name-input').value = fName;
+                document.getElementById('modal-color-input').value = fColor;
+                document.getElementById('edit-modal').classList.add('active');
+            }
+
+            closeModal() { document.getElementById('edit-modal').classList.remove('active'); }
+
+            saveModal() {
+                const oldName = this.editingFaction;
+                const newName = document.getElementById('modal-name-input').value;
+                const newColor = document.getElementById('modal-color-input').value;
+                this.data.forEach(d => {
+                    if(d.properties.faction === oldName) {
+                        d.properties.faction = newName;
+                        d.properties.color = newColor;
+                    }
+                });
+                this.closeModal();
+                this.render();
+                this.renderList();
+            }
+
+            setMode(m) {
+                this.mode = m;
+                document.querySelectorAll('.btn-titan[id^="m-"]').forEach(b => b.classList.remove('active'));
+                document.getElementById('m-' + m).classList.add('active');
+                this.render();
+            }
+
+            toggleTool(t) {
+                this.activeTool = (this.activeTool === t) ? null : t;
+                document.querySelectorAll('.btn-titan[id^="tool-"]').forEach(b => b.classList.remove('btn-tool', 'active'));
+                if(this.activeTool) document.getElementById('tool-' + this.activeTool).classList.add('btn-tool', 'active');
+            }
+
+            renderList() {
+                const search = document.getElementById('f-search').value.toLowerCase();
+                const factions = new Map();
+                this.data.forEach(d => {
+                    const f = d.properties.faction;
+                    if(!f) return;
+                    if(!factions.has(f)) factions.set(f, { name: f, color: d.properties.color, pop: 0 });
+                    factions.get(f).pop += d.properties.pop;
+                });
+                const sorted = Array.from(factions.values()).filter(x => x.name.toLowerCase().includes(search)).sort((a,b) => b.pop - a.pop);
+                document.getElementById('faction-list').innerHTML = sorted.map(f => `
+                    <div class="faction-card flex justify-between items-center shadow-lg border-l-[10px]" style="border-left-color: ${f.color}">
+                        <div onclick="titan.selectFaction('${f.name}', '${f.color}')" class="flex-grow overflow-hidden pl-2">
+                            <span class="truncate w-full uppercase block font-black text-white text-[12px]">${f.name}</span>
+                            <span class="text-blue-500 font-black text-[9px] mt-1 block tracking-widest">${this.formatNumber(f.pop)} ABITANTI</span>
                         </div>
+                        <button onclick="titan.openEditModal('${f.name}', '${f.color}')" class="p-4 opacity-30 hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-pen text-white"></i>
+                        </button>
                     </div>
-                </div>
+                `).join('');
+            }
 
-                <div class="control-group">
-                    <label>Strumenti Pittura</label>
-                    <div class="toolbar-flex" style="margin-bottom: 10px;">
-                        <input type="color" id="colorPicker" value="#ef4444" title="Scegli Colore">
-                        <span id="colorHex" style="font-family: monospace; font-weight: bold; flex-grow: 1;">#EF4444</span>
-                        <button class="btn" id="eraserBtn" title="Gomma Cancellatura">🧹</button>
-                    </div>
-                    <input type="text" id="factionNameInput" class="custom-input" placeholder="Nome Gruppo/Nazione..." value="Nuovo Gruppo">
-                    
-                    <div style="position: relative;">
-                        <input type="text" id="searchInput" class="custom-input" placeholder="Cerca Nazione/Regione...">
-                        <div id="searchResults" style="display:none; position:absolute; width:100%; max-height:200px; overflow-y:auto; background:var(--panel-bg); border:1px solid var(--accent); z-index:20; border-radius:4px; margin-top: -10px;"></div>
-                    </div>
-                    <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0;"><i>* Click Destro sulla mappa per i Marker 📍</i></p>
-                </div>
+            selectFaction(n, c) {
+                document.getElementById('input-name').value = n;
+                document.getElementById('input-color').value = c;
+                this.updateOrb(c);
+            }
 
-                <div class="control-group" id="inspector-panel" style="display: none; border-left: 3px solid var(--accent);">
-                    <label>Ispettore Area</label>
-                    <div id="insp-name" style="font-size: 1.1rem; font-weight: bold; color: #fff;">-</div>
-                    <div id="insp-admin" style="font-size: 0.75rem; color: var(--accent); margin-bottom: 10px;">-</div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-muted);">Area: <span id="insp-area" style="color:#fff; font-family:monospace;">0</span></div>
-                    <input type="number" id="insp-pop" class="custom-input" placeholder="Popolazione (Abitanti)..." style="margin-bottom: 5px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">Densità: <span id="insp-density" style="color:var(--accent); font-weight:bold;">0</span></div>
-                </div>
+            toggleSidebar(v) { document.body.className = v ? "sidebar-open" : "sidebar-closed"; }
+        }
 
-                <div class="control-group" id="political-legend-container">
-                    <div style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; color: var(--text-muted); text-transform: uppercase;">
-                        Legenda Colori <span id="political-legend-count" style="background: var(--border-light); color: #fff; padding: 2px 6px; border-radius: 4px;">0</span>
-                    </div>
-                    <div id="political-legend-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
-                </div>
-
-                <div class="control-group" style="margin-top: auto; border: none; background: transparent; padding: 0;">
-                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                        <button class="btn" id="exportPng" style="flex:1" title="Scarica PNG">PNG</button>
-                        <button class="btn" id="exportJpg" style="flex:1" title="Scarica JPG">JPG</button>
-                        <button class="btn" id="exportPdf" style="flex:1; background: var(--accent);" title="Scarica PDF">PDF</button>
-                        <button class="btn" id="btnExportProject" style="flex:1" title="Salva File JSON">JSON</button>
-                    </div>
-                    <div style="display: flex; gap: 5px;">
-                        <select id="editorSaveSlot" class="custom-input" style="margin-bottom: 0; flex: 1;">
-                            <option value="slot_1">Slot 1</option>
-                            <option value="slot_2">Slot 2</option>
-                            <option value="slot_3">Slot 3</option>
-                        </select>
-                        <button class="btn btn-success" id="btnSaveExit" style="flex: 1;">Salva & Esci</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="map-controls" style="display: none;">
-            <button class="map-ctrl-btn" id="btn-fullscreen" title="Schermo Intero">⛶</button>
-            <button class="map-ctrl-btn" id="btn-zoom-in" title="Avvicina">➕</button>
-            <button class="map-ctrl-btn" id="btn-zoom-out" title="Allontana">➖</button>
-        </div>
-
-        <div id="map-container"><svg id="world-map"></svg></div>
-        <div id="tooltip"></div>
-        <div id="loading">Elaborazione...<br><span id="loading-sub" style="font-size:0.85rem; color:var(--text-muted);">Inizializzazione Motore Vettoriale</span></div>
-    </div>
-
-    <div id="toast">Sistema Attivo</div>
-
-    <script type="module" src="./js/main.js"></script>
+        window.titan = new TitanEngine();
+    </script>
 </body>
 </html>
