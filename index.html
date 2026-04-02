@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MegaMap - V26.04.02.16.14</title>
+    <title>TITAN GIS PRO - V107.76 | LOCAL SOVEREIGNTY</title>
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/topojson-client@3"></script>
@@ -78,7 +78,7 @@
         .btn-titan.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .btn-tool.active { background: #fbbf24 !important; color: #000 !important; border-color: #fbbf24 !important; }
 
-        #faction-list { flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 200px; }
+        #faction-list { flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 150px; }
         .faction-card {
             padding: 0.8rem; border-radius: 1.2rem; background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.05); font-size: 11px; font-weight: 900;
@@ -96,7 +96,7 @@
     <!-- LOADER -->
     <div id="boot-loader" class="boot-loader">
         <div class="w-14 h-14 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-[9px] font-black tracking-widest uppercase text-blue-500 animate-pulse">Sincronizzazione Unità Nazionali...</p>
+        <p id="loader-text" class="text-[9px] font-black tracking-widest uppercase text-blue-500 animate-pulse">Sincronizzazione Dati...</p>
     </div>
 
     <!-- MODAL EDIT -->
@@ -153,8 +153,8 @@
     <!-- MAIN MENU -->
     <div id="main-menu" class="fixed inset-0 z-[9000] bg-black flex flex-col items-center justify-center p-8 text-center">
         <div class="mb-12">
-            <h1 class="text-7xl sm:text-[11rem] font-black italic tracking-tighter mb-2 leading-none uppercase">Titan <span class="text-blue-600">GIS</span></h1>
-            <p class="text-blue-400 font-bold tracking-[0.5em] sm:tracking-[2em] uppercase text-[10px] sm:text-[14px] opacity-40">V107.73 | SOVEREIGN EFFICIENCY</p>
+            <h1 class="text-6xl sm:text-[11rem] font-black italic tracking-tighter mb-2 leading-none uppercase">Titan <span class="text-blue-600">GIS</span></h1>
+            <p class="text-blue-400 font-bold tracking-[0.5em] sm:tracking-[2em] uppercase text-[10px] sm:text-[14px] opacity-40">V107.76 | LOCAL SOVEREIGNTY</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
             <div class="glass p-12 rounded-[2.5rem] group cursor-pointer hover:scale-[1.02] transition-all" onclick="titan.boot('world')">
@@ -164,13 +164,13 @@
             <div class="glass p-12 rounded-[2.5rem] group cursor-pointer hover:scale-[1.02] transition-all" onclick="titan.boot('continent')">
                 <i class="fa-solid fa-satellite-dish text-5xl text-blue-600 mb-8 opacity-20 group-hover:opacity-100 transition-opacity"></i>
                 <select id="sector-select" class="w-full bg-black border border-white/10 p-5 rounded-2xl text-[10px] font-black uppercase text-white mb-4 outline-none appearance-none cursor-pointer" onclick="event.stopPropagation()">
-                    <option value="Europe">Europa (Vuota)</option>
+                    <option value="Europe">Europa (+ Russia)</option>
                     <option value="Americas">Americhe (Vuota)</option>
                     <option value="Asia">Asia (Vuota)</option>
                     <option value="Africa">Africa (Vuota)</option>
                     <option value="Oceania">Oceania (Vuota)</option>
                 </select>
-                <button class="w-full py-5 rounded-2xl bg-white/10 font-black text-[10px] tracking-widest uppercase">Sector Boot (Nations Only)</button>
+                <button class="w-full py-5 rounded-2xl bg-white/10 font-black text-[10px] tracking-widest uppercase">Sector Boot (Nations)</button>
             </div>
         </div>
     </div>
@@ -178,9 +178,20 @@
     <!-- UI -->
     <div id="editor-ui" class="hidden">
         <div id="sidebar" class="glass shadow-2xl">
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex justify-between items-center mb-6">
                 <h2 class="font-black text-xl sm:text-3xl italic tracking-tighter text-white uppercase text-blue-600">Titan <span class="text-white">GIS</span></h2>
                 <button onclick="titan.toggleSidebar(false)" class="text-4xl opacity-20 hover:opacity-100 text-white">&times;</button>
+            </div>
+
+            <!-- TOOL ISOLA NAZIONE -->
+            <div class="mb-4 p-4 rounded-[1.5rem] bg-blue-900/10 border border-blue-500/30">
+                <h3 class="text-[9px] font-black uppercase text-blue-400 tracking-widest mb-2"><i class="fa-solid fa-microscope mr-1"></i> Isola Nazione</h3>
+                <div class="flex gap-2">
+                    <datalist id="nation-list"></datalist>
+                    <input type="text" id="isolate-search" list="nation-list" class="w-full bg-black/60 border border-white/10 rounded-xl p-3 text-white font-black text-xs outline-none focus:border-blue-500" placeholder="Es. Italy, Russia, France...">
+                    <button onclick="titan.triggerIsolate()" class="bg-blue-600 hover:bg-blue-500 transition-colors rounded-xl px-4 font-black text-white"><i class="fa-solid fa-crosshairs"></i></button>
+                </div>
+                <button id="exit-isolate-btn" onclick="titan.exitIsolate()" class="hidden w-full mt-3 py-3 bg-red-600 rounded-xl font-black text-[10px] uppercase shadow-lg">Termina Isolamento & Salva</button>
             </div>
 
             <!-- DESIGNER -->
@@ -191,7 +202,7 @@
                     </div>
                     <div class="flex-grow">
                         <label class="text-[9px] font-black uppercase opacity-30 tracking-widest block mb-1">Dominio Attivo</label>
-                        <input type="text" id="input-name" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white font-black text-xs outline-none focus:border-blue-500" value="Nuovo Impero">
+                        <input type="text" id="input-name" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white font-black text-xs outline-none focus:border-blue-500" value="Legione Primus">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -248,9 +259,15 @@
                 
                 this.currentProj = this.proj3d;
                 this.pathGen = d3.geoPath().projection(this.currentProj);
-                this.data = []; this.mode = 'political'; this.activeTool = null;
-                this.isMouseDown = false; this.selectedAreaId = null;
+                
+                this.data = []; 
+                this.mainMapState = null; 
+                this.mode = 'political'; 
+                this.activeTool = null;
+                this.isMouseDown = false; 
+                this.selectedAreaId = null;
                 this.editingFaction = null;
+                
                 this.setupControls();
             }
 
@@ -287,7 +304,7 @@
                 this.w = b.width; this.h = b.height;
                 this.baseScale = Math.min(this.w, this.h) / 2.2;
                 this.currentProj.translate([this.w/2, this.h/2]).scale(this.baseScale);
-                this.render();
+                if(this.data.length) this.render();
             }
 
             formatNumber(n) {
@@ -301,19 +318,18 @@
 
             async boot(mode) {
                 const loader = document.getElementById('boot-loader');
+                document.getElementById('loader-text').textContent = "Sincronizzazione Unità Nazionali...";
                 loader.style.display = 'flex';
                 
                 try {
                     this.gData.selectAll("*").remove();
                     this.data = [];
 
-                    // SEMPRE USARE LE NAZIONI PER MASSIMA VELOCITÀ
                     const url = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json";
                     const res = await fetch(url);
                     const topo = await res.json();
                     let features = topojson.feature(topo, topo.objects.countries).features;
 
-                    // Blacklist Maldive Purge
                     features = features.filter(f => !["Maldives", "Tunisia", "French Guiana"].includes(f.properties.name));
 
                     if(mode === 'continent') {
@@ -325,9 +341,13 @@
                             "Africa": {x: [-24, 55], y: [-38, 38]},
                             "Oceania": {x: [110, 185], y: [-52, 0]}
                         }[sector];
+                        
                         features = features.filter(f => {
                             const c = d3.geoCentroid(f);
-                            return c[0] >= bounds.x[0] && c[0] <= bounds.x[1] && c[1] >= bounds.y[0] && c[1] <= bounds.y[1];
+                            const n = f.properties.name || "";
+                            const inBounds = c[0] >= bounds.x[0] && c[0] <= bounds.x[1] && c[1] >= bounds.y[0] && c[1] <= bounds.y[1];
+                            if (sector === 'Europe' && (n === 'Russia' || n === 'Russian Federation')) return true;
+                            return inBounds;
                         });
                         this.currentProj = this.proj2d;
                         document.getElementById('proj-btn').textContent = "Visuale 2D";
@@ -338,9 +358,8 @@
 
                     const bootId = Math.random().toString(36).substr(7);
                     this.data = features.map((f, i) => {
-                        const name = f.properties.name || `Region-${f.id}`;
+                        const name = f.properties.name || `Unit-${f.id}`;
                         let geom = JSON.parse(JSON.stringify(f.geometry)); 
-                        // Fix Winding Order
                         if (d3.geoArea({type: "Feature", geometry: geom}) > 2.0) {
                             if (geom.type === "Polygon") geom.coordinates = geom.coordinates.map(r => r.reverse());
                             else if (geom.type === "MultiPolygon") geom.coordinates = geom.coordinates.map(p => p.map(r => r.reverse()));
@@ -358,6 +377,10 @@
                         };
                     });
 
+                    // AUTOCOMPLETE NATIONS
+                    const datalist = document.getElementById('nation-list');
+                    datalist.innerHTML = this.data.map(d => `<option value="${d.properties.name}">`).join('');
+
                     document.getElementById('main-menu').classList.add('hidden');
                     document.getElementById('editor-ui').classList.remove('hidden');
                     this.pathGen = d3.geoPath().projection(this.currentProj);
@@ -368,7 +391,136 @@
                 loader.style.display = 'none';
             }
 
+            async triggerIsolate() {
+                const searchInput = document.getElementById('isolate-search');
+                const query = searchInput.value.trim();
+                if(!query) return;
+
+                const loader = document.getElementById('boot-loader');
+                loader.style.display = 'flex';
+
+                try {
+                    // 1. IDENTIFICAZIONE TRAMITE RESTCOUNTRIES (Trova il codice ISO3)
+                    document.getElementById('loader-text').textContent = `Ricerca codice ISO per: ${query}...`;
+                    const rcRes = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(query)}`);
+                    if (!rcRes.ok) throw new Error("Nazione non riconosciuta.");
+                    const rcData = await rcRes.json();
+                    const cca3 = rcData[0].cca3;
+                    const actualName = rcData[0].name.common;
+
+                    // 2. METADATI REGIONALI TRAMITE GEOBOUNDARIES
+                    document.getElementById('loader-text').textContent = `Contatto GeoBoundaries (ISO: ${cca3})...`;
+                    const gbRes = await fetch(`https://www.geoboundaries.org/api/current/gbOpen/${cca3}/ADM1/`);
+                    if (!gbRes.ok) throw new Error(`Confini regionali non disponibili per ${actualName}.`);
+                    const gbData = await gbRes.json();
+
+                    // 3. DOWNLOAD GEOMETRIE
+                    document.getElementById('loader-text').textContent = `Estrazione Geometrie in corso...`;
+                    const geoRes = await fetch(gbData.simplifiedGeometryGeoJSON);
+                    if (!geoRes.ok) throw new Error("Errore nel download delle geometrie.");
+                    const fileData = await geoRes.json();
+
+                    let regions = fileData.features;
+                    if(!regions || regions.length === 0) throw new Error("Nessuna regione trovata nel file.");
+
+                    // Trova e salva lo stato della nazione per la rimozione futura dal globo
+                    const targetNation = this.data.find(d => (d.properties.name || "").toLowerCase() === actualName.toLowerCase() || (d.properties.name || "").toLowerCase() === query.toLowerCase());
+
+                    this.mainMapState = {
+                        data: [...this.data],
+                        proj: this.currentProj,
+                        isolatedName: targetNation ? targetNation.properties.name : actualName
+                    };
+
+                    const bootId = Math.random().toString(36).substr(7);
+                    this.data = regions.map((f, i) => {
+                        const name = f.properties.shapeName || f.properties.name || f.properties.NAME_1 || `Reg-${i}`;
+                        let geom = JSON.parse(JSON.stringify(f.geometry)); 
+                        
+                        if (d3.geoArea({type: "Feature", geometry: geom}) > 2.0) {
+                            if (geom.type === "Polygon") geom.coordinates = geom.coordinates.map(r => r.reverse());
+                            else if (geom.type === "MultiPolygon") geom.coordinates = geom.coordinates.map(p => p.map(r => r.reverse()));
+                        }
+                        
+                        const areaReal = Math.max(1, d3.geoArea({type: "Feature", geometry: geom}) * 6371 * 6371);
+                        
+                        return { 
+                            type: "Feature", geometry: geom,
+                            properties: {
+                                id: `T-ISO-${bootId}-${i}`, name, 
+                                faction: "", 
+                                pop: areaReal * (Math.random() * 800 + 5), // Densità casuale ma coerente con l'area
+                                area: areaReal, 
+                                color: "transparent",
+                                centroid: d3.geoCentroid({type: "Feature", geometry: geom})
+                            }
+                        };
+                    });
+
+                    // Passa alla vista 2D isolata
+                    this.currentProj = this.proj2d;
+                    this.pathGen = d3.geoPath().projection(this.currentProj);
+                    document.getElementById('proj-btn').textContent = "2D ISOLAMENTO";
+                    document.getElementById('proj-btn').disabled = true;
+                    document.getElementById('exit-isolate-btn').classList.remove('hidden');
+
+                    searchInput.value = ''; // Pulisce il campo di ricerca
+                    this.render();
+                    this.renderList();
+                    this.zoomToBounds();
+
+                } catch(e) { 
+                    console.error("Isolation Error:", e);
+                    const oldVal = searchInput.value;
+                    searchInput.value = e.message;
+                    setTimeout(() => searchInput.value = oldVal, 2500);
+                }
+                loader.style.display = 'none';
+            }
+
+            zoomToBounds() {
+                const bounds = d3.geoPath().projection(this.proj2d).bounds({type: "FeatureCollection", features: this.data});
+                const dx = bounds[1][0] - bounds[0][0];
+                const dy = bounds[1][1] - bounds[0][1];
+                if (!isFinite(dx) || dx === 0) return;
+
+                const x = (bounds[0][0] + bounds[1][0]) / 2;
+                const y = (bounds[0][1] + bounds[1][1]) / 2;
+                const scale = Math.max(1, Math.min(80, 0.85 / Math.max(dx / this.w, dy / this.h)));
+                const translate = [this.w / 2 - scale * x, this.h / 2 - scale * y];
+
+                this.svg.transition().duration(750).call(
+                    this.zoomHandler.transform,
+                    d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+                );
+            }
+
+            exitIsolate() {
+                if(!this.mainMapState) return;
+
+                const filteredMainData = this.mainMapState.data.filter(d => {
+                    return (d.properties.name || "").toLowerCase() !== this.mainMapState.isolatedName.toLowerCase();
+                });
+
+                this.data = [...filteredMainData, ...this.data];
+
+                this.currentProj = this.mainMapState.proj;
+                this.pathGen = d3.geoPath().projection(this.currentProj);
+                document.getElementById('proj-btn').textContent = this.currentProj === this.proj3d ? "3D GLOBO" : "Visuale 2D";
+                document.getElementById('proj-btn').disabled = false;
+
+                document.getElementById('exit-isolate-btn').classList.add('hidden');
+                document.getElementById('isolate-search').value = '';
+                this.mainMapState = null;
+
+                this.svg.transition().duration(750).call(this.zoomHandler.transform, d3.zoomIdentity);
+                
+                this.render();
+                this.renderList();
+            }
+
             toggleProjection() {
+                if(this.mainMapState) return;
                 const was3d = this.currentProj === this.proj3d;
                 this.currentProj = was3d ? this.proj2d : this.proj3d;
                 document.getElementById('proj-btn').textContent = was3d ? "Visuale 2D" : "3D GLOBO";
@@ -406,13 +558,12 @@
 
             getFill(d) {
                 const p = d.properties;
-                if (!p.faction) return "#2a2b2f";
+                if (!p.faction && this.mode === 'political') return "#2a2b2f";
                 if (this.mode === 'political') return p.color;
 
                 const isDens = this.mode === 'density';
                 const val = isDens ? (p.pop / p.area) : p.pop;
-                const active = this.data.filter(x => x.properties.faction);
-                const ext = d3.extent(active, x => isDens ? (x.properties.pop/x.properties.area) : x.properties.pop);
+                const ext = d3.extent(this.data, x => isDens ? (x.properties.pop/x.properties.area) : x.properties.pop);
                 
                 const scale = d3.scaleSequentialLog(isDens ? d3.interpolateYlOrRd : d3.interpolateViridis)
                                 .domain([Math.max(0.1, ext[0]), ext[1]]).clamp(true);
@@ -429,9 +580,9 @@
                 document.getElementById('legend-bar').style.background = isDens 
                     ? "linear-gradient(to right, #ffffcc, #fd8d3c, #800026)"
                     : "linear-gradient(to right, #440154, #21908d, #fde725)";
-                const active = this.data.filter(x => x.properties.faction);
-                if (active.length) {
-                    const ext = d3.extent(active, x => isDens ? (x.properties.pop/x.properties.area) : x.properties.pop);
+                
+                const ext = d3.extent(this.data, x => isDens ? (x.properties.pop/x.properties.area) : x.properties.pop);
+                if (ext[0] !== undefined) {
                     document.getElementById('val-min').textContent = isDens ? ext[0].toFixed(1) : this.formatNumber(ext[0]);
                     document.getElementById('val-max').textContent = isDens ? ext[1].toFixed(1) : this.formatNumber(ext[1]);
                 }
